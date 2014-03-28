@@ -1,7 +1,7 @@
 defmodule IRCBot.Connection do
   @nickname "beamie"
-  #@channel "exligir"
-  @channel "elixir-lang"
+  @channel "exligir"
+  #@channel "elixir-lang"
 
   defrecord State, [text_hooks: [], token_hooks: []] do
     def add_hook(id, {:text, f}, state) do
@@ -327,32 +327,32 @@ end
 
 defmodule LinkHook do
   @nickname "beamie"
-  @repo_url "https://github.com/elixir-lang/elixir/"
+  @wiki_url "https://github.com/elixir-lang/elixir/wiki/"
 
   def run(text) do
     text = String.downcase(text)
     result = case text do
-      "wiki"     -> @repo_url <> "wiki"
-      "faq"      -> @repo_url <> "FAQ"
-      "talks"    -> @repo_url <> "Talks"
-      "projects" -> @repo_url <> "Projects"
-      "articles" -> @repo_url <> "Articles"
-      "books"    -> @repo_url <> "Books"
-      "learn"    -> "http://gaslight.co/blog/the-best-resources-for-learning-elixir"
+      "wiki"     -> @wiki_url
+      "articles" -> @wiki_url <> "Articles"
+      "projects" -> @wiki_url <> "Projects"
+      "talks"    -> @wiki_url <> "Talks"
+      "books"    -> @wiki_url <> "Books"
+      "faq"      -> @wiki_url <> "FAQ"
+      "learn"    -> "Blog post covering many of the up-to-date learning resources for Elixir: http://gaslight.co/blog/the-best-resources-for-learning-elixir"
       "ml talk"  -> ml_talk()
       "ml core"  -> ml_core()
-      "sips"     -> "http://elixirsips.com"
+      "sips"     -> "Collection of screencasts covering a wide range of topics: http://elixirsips.com"
       _          -> nil
     end
     result && {:msg, result}
   end
 
   defp ml_talk() do
-    "Questions and discussions for users: elixir-lang-talk (http://bit.ly/ex-ml-talk)."
+    "Mailing list for questions and discussions about Elixir's usage: \x{02}elixir-lang-talk\x{0f} http://bit.ly/ex-ml-talk"
   end
 
   defp ml_core() do
-    "Development, features, announcements: elixir-lang-core (http://bit.ly/ex-ml-core)."
+    "Mailing list for discussing Elixir development, features, announcements: \x{02}elixir-lang-core\x{0f} http://bit.ly/ex-ml-core"
   end
 end
 
