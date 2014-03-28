@@ -3,7 +3,7 @@ defmodule IRCBot.Connection do
   @channel "exligir"
   #@channel "elixir-lang"
 
-  defrecordp :hookrec, [:type, :direct, :fn]
+  defrecordp :hookrec, [type: nil, direct: false, fn: nil]
   defrecord State, hooks: []
 
   defp state_add_hook(state, id, f, opts) do
@@ -26,8 +26,8 @@ defmodule IRCBot.Connection do
     Process.register(pid, __MODULE__)
   end
 
-  def add_hook(id, hook, opts \\ []) do
-    Process.send(__MODULE__, {:internal, {:add_hook, id, hook, opts}})
+  def add_hook(id, f, opts \\ []) do
+    Process.send(__MODULE__, {:internal, {:add_hook, id, f, opts}})
   end
 
   def remove_hook(id) do
@@ -49,8 +49,8 @@ defmodule IRCBot.Connection do
     state = receive do
       {:internal, msg} ->
         case msg do
-          {:add_hook, id, hook, opts} ->
-            state_add_hook(state, id, hook, opts)
+          {:add_hook, id, f, opts} ->
+            state_add_hook(state, id, f, opts)
           {:remove_hook, id} ->
             state_remove_hook(state, id)
           other ->
@@ -60,8 +60,8 @@ defmodule IRCBot.Connection do
       {:tcp, ^sock, msg} ->
         msg = String.from_char_list!(msg) |> String.strip
         case process_msg(msg) do
-          {:msg, msg} ->
-            process_hooks(msg, state, sock)
+          {:msg, sender, msg} ->
+            process_hooks({sender, msg}, state, sock)
           {:reply, reply} ->
             irc_cmd(sock, "PRIVMSG", "\##{@channel} :#{reply}")
           :pong ->
@@ -76,18 +76,35 @@ defmodule IRCBot.Connection do
     message_loop(sock, state)
   end
 
-  def process_hooks(msg, State[hooks: hooks], sock) do
+  def process_hooks({sender, msg}, State[hooks: hooks], sock) do
+    receiver = get_message_receiver(msg)
+    IO.puts "receiver: '#{receiver}', sender: '#{sender}'"
+
     tokens = tokenize(msg)
     Enum.each(hooks, fn
       {_, hookrec(type: type, direct: direct, fn: f)} ->
-        if not direct || receiver == @nickname do
+        if (not direct) || (receiver == @nickname) do
           arg = case type do
-            :text  -> msg
+            :text  -> if direct do strip_msg_receiver(msg, receiver) else msg end
             :token -> tokens
           end
           resolve_hook_result(f.(sender, arg), sock)
         end
     end)
+  end
+
+  defp get_message_receiver(msg) do
+    case Regex.run(~r"^([-_^[:alnum:]]+)(?::)", msg) do
+      [_, name] -> name
+      _ -> nil
+    end
+  end
+
+  defp strip_msg_receiver(msg, receiver) do
+    msg
+    |> String.slice(byte_size(receiver), byte_size(msg))
+    |> String.lstrip(?:)
+    |> String.strip()
   end
 
   defp tokenize(msg) do
@@ -103,7 +120,7 @@ defmodule IRCBot.Connection do
   end
 
   defp resolve_hook_result({:reply, to, text}, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{@channel} #{to}: :#{text}")
+    irc_cmd(sock, "PRIVMSG", "\##{@channel} :#{to}: #{text}")
   end
 
   defp resolve_hook_result({:msg, text}, sock) do
@@ -116,7 +133,7 @@ defmodule IRCBot.Connection do
 
 
   defp irc_cmd(sock, cmd, rest) do
-    IO.puts "Executing command #{cmd}"
+    IO.puts "Executing command #{cmd} with args #{inspect rest}"
     :ok = :gen_tcp.send(sock, "#{cmd} #{rest}\r\n")
     sock
   end
@@ -124,7 +141,15 @@ defmodule IRCBot.Connection do
   defp process_msg(msg) do
     IO.puts msg
 
-    {_prefix, command, args} = parse_msg(msg)
+    {prefix, command, args} = parse_msg(msg)
+
+    sender = if prefix do
+      case Regex.run(~r"^([^! ]+)(?:$|!)", String.from_char_list!(prefix)) do
+        [_, sender] -> sender
+        other -> IO.puts "bad sender: #{inspect prefix} #{inspect other}"; nil
+      end
+    end
+
     case command do
       'PRIVMSG' ->
         [_chan, msg] = args
@@ -132,7 +157,7 @@ defmodule IRCBot.Connection do
           "!eval " <> expr ->
             IO.puts "Eval expr #{expr}"
             {:reply, Evaluator.eval(expr)}
-          _ -> {:msg, msg}
+          _ -> {:msg, sender, msg}
         end
       'PING' ->
         :pong
@@ -194,7 +219,7 @@ defmodule IRCBot.Connection do
 end
 
 defmodule IssueHook do
-  def run(text) do
+  def run(_sender, text) do
     IO.puts "Testing text for issues: '#{text}'"
     Regex.scan(~r"(?: |^)#(\d+)(?:(?=[[:space:]])|$)|issue[[:space:]]+#?(\d+)(?:(?=[[:space:]])|$)", text)
     |> Enum.map(fn x ->
@@ -252,7 +277,7 @@ defmodule IssueHook do
 end
 
 defmodule DocHook do
-  def run(text) do
+  def run(_sender, text) do
     mid_frag = "[A-Z][[:alnum:]_]*"
     mid = "#{mid_frag}(?:\.#{mid_frag})*"
     fid = "[^A-Z](?:[^/[:space:].]|/(?!\\d))*"
@@ -344,7 +369,7 @@ defmodule LinkHook do
   @nickname "beamie"
   @wiki_url "https://github.com/elixir-lang/elixir/wiki/"
 
-  def run(text) do
+  def run(_sender, text) do
     text = String.downcase(text)
     result = case text do
       "wiki"     -> @wiki_url
@@ -372,7 +397,7 @@ defmodule LinkHook do
 end
 
 defmodule TriviaHook do
-  def run(text) do
+  def run(_sender, text) do
     tokens = tokenize(text)
     result = if find_at_least(tokens, [{["mix", "project", "application", "app"], 1}, {["shell", "iex", "repl"], 1}]) do
       "To start an interactive shell with your mix project loaded in it, run `iex -S mix`"
@@ -407,9 +432,11 @@ defmodule TriviaHook do
 end
 
 defmodule PingHook do
-  def run(text) do
+  def run(sender, text) do
+    IO.inspect text
     if String.downcase(text) == "ping" do
-      {:msg, "pong"}
+      IO.inspect {:reply, sender, "pong"}
+      {:reply, sender, "pong"}
     end
   end
 end
@@ -417,8 +444,8 @@ end
 :inets.start
 :ssl.start
 IRCBot.Connection.start_link
-IRCBot.Connection.add_hook :issue, {:text, &IssueHook.run/1}
-IRCBot.Connection.add_hook :doc, {:text, &DocHook.run/1}
-IRCBot.Connection.add_hook :link, {:text, &LinkHook.run/1}
-IRCBot.Connection.add_hook :trivia, {:text, &TriviaHook.run/1}
-IRCBot.Connection.add_hook :ping, {:text, &PingHook.run/1}
+IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text
+IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text
+IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text
+IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text
+IRCBot.Connection.add_hook :ping, &PingHook.run/2, [in: :text, direct: true]
