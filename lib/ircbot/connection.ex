@@ -3,27 +3,31 @@ defmodule IRCBot.Connection do
   @channel "exligir"
   #@channel "elixir-lang"
 
-  defrecord State, [text_hooks: [], token_hooks: []] do
-    def add_hook(id, {:text, f}, state) do
-      state.update_text_hooks(fn hooks -> hooks ++ [{id, f}] end)
-    end
+  defrecordp :hookrec, [:type, :direct, :fn]
+  defrecord State, hooks: []
 
-    def add_hook(id, {:token, f}, state) do
-      state.update_token_hooks(fn hooks -> hooks ++ [{id, f}] end)
-    end
-
-    def remove_hook(id, state=State[text_hooks: text, token_hooks: token]) do
-      state.text_hooks(Keyword.delete(text, id)).token_hooks(Keyword.delete(token, id))
-    end
+  defp state_add_hook(state, id, f, opts) do
+    hook = Enum.reduce(opts, hookrec(fn: f), fn
+      {:in, type}, rec ->
+        hookrec(rec, type: type)
+      {:direct, flag}, rec ->
+        hookrec(rec, direct: flag)
+    end)
+    state.update_hooks(&( &1 ++ [{id, hook}] ))
   end
+
+  defp state_remove_hook(state=State[hooks: hooks], id) do
+    state.hooks(Keyword.delete(hooks, id))
+  end
+
 
   def start_link() do
     pid = spawn_link(&connect/0)
     Process.register(pid, __MODULE__)
   end
 
-  def add_hook(id, hook) do
-    Process.send(__MODULE__, {:internal, {:add_hook, id, hook}})
+  def add_hook(id, hook, opts \\ []) do
+    Process.send(__MODULE__, {:internal, {:add_hook, id, hook, opts}})
   end
 
   def remove_hook(id) do
@@ -45,10 +49,10 @@ defmodule IRCBot.Connection do
     state = receive do
       {:internal, msg} ->
         case msg do
-          {:add_hook, id, hook} ->
-            state.add_hook(id, hook)
+          {:add_hook, id, hook, opts} ->
+            state_add_hook(state, id, hook, opts)
           {:remove_hook, id} ->
-            state.remove_hook(id)
+            state_remove_hook(state, id)
           other ->
             raise RuntimeError[message: "unhandled internal msg #{inspect other}"]
         end
@@ -72,11 +76,18 @@ defmodule IRCBot.Connection do
     message_loop(sock, state)
   end
 
-  def process_hooks(msg, State[text_hooks: text, token_hooks: token], sock) do
-    Enum.each(text, fn {_, f} -> resolve_hook_result(f.(msg), sock) end)
-
+  def process_hooks(msg, State[hooks: hooks], sock) do
     tokens = tokenize(msg)
-    Enum.each(token, fn {_, f} -> resolve_hook_result(f.(tokens), sock) end)
+    Enum.each(hooks, fn
+      {_, hookrec(type: type, direct: direct, fn: f)} ->
+        if not direct || receiver == @nickname do
+          arg = case type do
+            :text  -> msg
+            :token -> tokens
+          end
+          resolve_hook_result(f.(sender, arg), sock)
+        end
+    end)
   end
 
   defp tokenize(msg) do
@@ -88,7 +99,11 @@ defmodule IRCBot.Connection do
   end
 
   defp resolve_hook_result({:reply, text}, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{@channel} RECEIVER: :#{text}")
+    irc_cmd(sock, "PRIVMSG", "\##{@channel} #{@nickname}: :#{text}")
+  end
+
+  defp resolve_hook_result({:reply, to, text}, sock) do
+    irc_cmd(sock, "PRIVMSG", "\##{@channel} #{to}: :#{text}")
   end
 
   defp resolve_hook_result({:msg, text}, sock) do
@@ -391,6 +406,14 @@ defmodule TriviaHook do
   end
 end
 
+defmodule PingHook do
+  def run(text) do
+    if String.downcase(text) == "ping" do
+      {:msg, "pong"}
+    end
+  end
+end
+
 :inets.start
 :ssl.start
 IRCBot.Connection.start_link
@@ -398,3 +421,4 @@ IRCBot.Connection.add_hook :issue, {:text, &IssueHook.run/1}
 IRCBot.Connection.add_hook :doc, {:text, &DocHook.run/1}
 IRCBot.Connection.add_hook :link, {:text, &LinkHook.run/1}
 IRCBot.Connection.add_hook :trivia, {:text, &TriviaHook.run/1}
+IRCBot.Connection.add_hook :ping, {:text, &PingHook.run/1}
