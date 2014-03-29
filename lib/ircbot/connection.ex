@@ -1,7 +1,7 @@
 defmodule IRCBot.Connection do
   @nickname "beamie"
-  @channel "exligir"
-  #@channel "elixir-lang"
+  #@channel "exligir"
+  @channel "elixir-lang"
 
   defrecordp :hookrec, [type: nil, direct: false, fn: nil]
   defrecord State, hooks: []
@@ -479,6 +479,16 @@ defmodule PingHook do
   end
 end
 
+defmodule RudeReplyHook do
+  def run(sender, text) do
+    if String.ends_with?(text, "?") do
+      {:reply, sender, "I don't know. Perhaps you should google it"}
+    else
+      {:reply, sender, "I don't like you either"}
+    end
+  end
+end
+
 :inets.start
 :ssl.start
 IRCBot.Connection.start_link
@@ -488,3 +498,4 @@ IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true
 IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text
 IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text
 IRCBot.Connection.add_hook :ping, &PingHook.run/2, [in: :text, direct: true]
+IRCBot.Connection.add_hook :rudereply, &RudeReplyHook.run/2, [in: :text, direct: true]
