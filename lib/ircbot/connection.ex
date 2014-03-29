@@ -1,7 +1,7 @@
 defmodule IRCBot.Connection do
   @nickname "beamie"
-  @channel "exligir"
-  #@channel "elixir-lang"
+  #@channel "exligir"
+  @channel "elixir-lang"
 
   defrecordp :hookrec, [type: nil, direct: false, fn: nil]
   defrecord State, hooks: []
@@ -289,7 +289,7 @@ defmodule DocHook do
     result = extract_module_doc(module_re, text)
           || extract_local_doc(fun_re, text)
           || extract_mfa_doc(mfa_re, text)
-    result && {:msg, result}
+    result && Enum.map(result, fn text -> {:msg, text} end)
   end
 
   defp extract_module_doc(re, text) do
@@ -302,7 +302,7 @@ defmodule DocHook do
         end
       _ -> nil
     end
-    modname && make_module_url(modname)
+    modname && [make_module_url(modname)]
   end
 
   defp extract_local_doc(re, text) do
@@ -332,20 +332,19 @@ defmodule DocHook do
     rescue
       ArgumentError -> nil
     end
-    arity = Code.ensure_loaded?(mod) && check_arity_doc(mod, fun, arity)
-    arity && make_mfa_url(modname, fname, arity)
+    arities = Code.ensure_loaded?(mod) && check_arity_doc(mod, fun, arity)
+    arities && Enum.map(arities, fn arity -> make_mfa_url(modname, fname, arity) end)
   end
 
   defp check_arity_doc(mod, fun, :all) do
-    # Find the first function with name 'fun' that has a docstring
     Keyword.get_values(mod.__info__(:functions), fun)  # get all arities of fun
     |> Stream.map(fn arity -> check_doc(mod, fun, arity) end)
     |> Enum.reject(&(nil == &1))
-    |> List.first()
   end
 
   defp check_arity_doc(mod, fun, arity) do
-    check_doc(mod, fun, arity)
+    arity = check_doc(mod, fun, arity)
+    arity && [arity]
   end
 
   defp check_doc(mod, fun, arity) do
