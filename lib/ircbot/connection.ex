@@ -438,7 +438,7 @@ end
 defmodule TriviaHook do
   def run(_sender, text) do
     tokens = tokenize(text)
-    result = if find_at_least(tokens, [{["mix", "project", "application", "app"], 1}, {["shell", "iex", "repl"], 1}]) do
+    result = if find_at_least(tokens, [{["mix", "project", "application", "app"], 1}, {["shell", "iex", "repl"], 1}, {["?"], 1}]) do
       "To start an interactive shell with your mix project loaded in it, run `iex -S mix`"
     end
     result && {:msg, result}
