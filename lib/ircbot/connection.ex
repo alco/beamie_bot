@@ -365,13 +365,20 @@ defmodule DocHook do
   end
 end
 
+defmodule LinkScanHook do
+  def run(sender, text) do
+    Regex.scan(~r"\b([-_[:alnum:]]+)~", text)
+    |> Enum.map(fn [_, word] ->
+         LinkHook.run(sender, word)
+       end)
+  end
+end
+
 defmodule LinkHook do
-  @nickname "beamie"
   @wiki_url "https://github.com/elixir-lang/elixir/wiki/"
 
   def run(_sender, text) do
-    text = String.downcase(text)
-    result = case text do
+    result = case String.downcase(text) do
       "wiki"     -> @wiki_url
       "articles" -> @wiki_url <> "Articles"
       "projects" -> @wiki_url <> "Projects"
@@ -379,8 +386,8 @@ defmodule LinkHook do
       "books"    -> @wiki_url <> "Books"
       "faq"      -> @wiki_url <> "FAQ"
       "learn"    -> "Blog post covering many of the up-to-date learning resources for Elixir: http://gaslight.co/blog/the-best-resources-for-learning-elixir"
-      "ml talk"  -> ml_talk()
-      "ml core"  -> ml_core()
+      "ml-talk"  -> ml_talk()
+      "ml-core"  -> ml_core()
       "sips"     -> "Collection of screencasts covering a wide range of topics: http://elixirsips.com"
       _          -> nil
     end
@@ -435,7 +442,6 @@ defmodule PingHook do
   def run(sender, text) do
     IO.inspect text
     if String.downcase(text) == "ping" do
-      IO.inspect {:reply, sender, "pong"}
       {:reply, sender, "pong"}
     end
   end
@@ -446,6 +452,7 @@ end
 IRCBot.Connection.start_link
 IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text
 IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text
-IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text
+IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true
+IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text
 IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text
 IRCBot.Connection.add_hook :ping, &PingHook.run/2, [in: :text, direct: true]
