@@ -1,7 +1,58 @@
+defmodule Evaluator do
+  def eval(expr) do
+    result = :httpc.request(:post, {'http://0.0.0.0:8000/eval/elixir', [], '', expr}, [], [sync: true])
+    case result do
+      {:error, _reason} ->
+        "*internal service error*"
+      {:ok, {status, _headers, data} } ->
+        IO.inspect status
+        reply = data |> String.from_char_list! |> String.strip
+        IO.puts "replying with #{reply}"
+        reply
+    end
+  end
+
+  def _eval(expr) do
+    try do
+      {result, _} = expr |> String.strip |> Code.eval_string
+      inspect(result)
+    catch
+      kind, error ->
+        format_error(kind, error, System.stacktrace)
+    end
+  end
+
+  defp format_error(:error, exception, stacktrace) do
+    { exception, _ } = normalize_exception(exception, stacktrace)
+    "** (#{inspect exception.__record__(:name)}) #{exception.message}"
+  end
+
+  defp format_error(kind, reason, _) do
+    "** (#{kind}) #{inspect(reason)}"
+  end
+
+  defp normalize_exception(:undef, [{ IEx.Helpers, fun, arity, _ }|t]) do
+    { RuntimeError[message: "undefined function: #{format_function(fun, arity)}"], t }
+  end
+
+  defp normalize_exception(exception, stacktrace) do
+    { Exception.normalize(:error, exception), stacktrace }
+  end
+
+  defp format_function(fun, arity) do
+    cond do
+      is_list(arity) ->
+        "#{fun}/#{length(arity)}"
+      true ->
+        "#{fun}/#{arity}"
+    end
+  end
+end
+
 defmodule IRCBot.Connection do
   @nickname "beamie"
-  #@channel "exligir"
-  @channel "elixir-lang"
+  @channel "exligir"
+  #@channel "elixir-lang"
 
   defrecordp :hookrec, [type: nil, direct: false, fn: nil]
   defrecord State, hooks: []
@@ -481,8 +532,17 @@ end
 
 defmodule RudeReplyHook do
   def run(sender, text) do
-    if String.ends_with?(text, "?") do
-      {:reply, sender, "I don't know. Perhaps you should google it"}
+    downtext = String.downcase(text)
+    if String.ends_with?(downtext, "?") do
+      if String.contains?(downtext, ["homoiconic", "erlang"]) do
+        if sender == "nox" do
+          {:reply, sender, "haha, funny"}
+        else
+          {:reply, sender, "ask nox about it"}
+        end
+      else
+        {:reply, sender, "I don't know. Perhaps you should google it"}
+      end
     else
       {:reply, sender, "I don't like you either"}
     end
@@ -508,7 +568,8 @@ defmodule LikeWhatHook do
     "you",
     "me",
     "my uncle Bob",
-    "it's been written in Erlang"
+    "it's been written in Erlang",
+    "a dash of lemon"
   ]
   @phrases_count length(@phrases)
 
@@ -516,6 +577,16 @@ defmodule LikeWhatHook do
     if Regex.match?(~r"^like what\??$"i, text) do
       index = :random.uniform(@phrases_count)-1
       {:reply, sender, "like " <> Enum.at(@phrases, index)}
+    end
+  end
+end
+
+defmodule EvalHook do
+  def run(_sender, msg) do
+    case msg do
+      "eval~" <> expr ->
+        {:msg, Evaluator.eval(expr)}
+      _ -> nil
     end
   end
 end
@@ -530,6 +601,7 @@ IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text
 IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true
 IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text
 IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text
-IRCBot.Connection.add_hook :ping, &PingHook.run/2, [in: :text, direct: true]
-IRCBot.Connection.add_hook :rudereply, &RudeReplyHook.run/2, [in: :text, direct: true]
-IRCBot.Connection.add_hook :likewhat, &LikeWhatHook.run/2, [in: :text, direct: true]
+IRCBot.Connection.add_hook :ping, &PingHook.run/2, in: :text, direct: true
+IRCBot.Connection.add_hook :rudereply, &RudeReplyHook.run/2, in: :text, direct: true
+IRCBot.Connection.add_hook :likewhat, &LikeWhatHook.run/2, in: :text, direct: true
+IRCBot.Connection.add_hook :eval, &EvalHook.run/2, in: :text
