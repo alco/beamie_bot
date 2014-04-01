@@ -1,8 +1,9 @@
 defmodule Evaluator do
-  def eval(expr) do
-    result = :httpc.request(:post, {'http://0.0.0.0:8000/eval/elixir', [], '', expr}, [], [sync: true])
+  def eval(expr, version \\ "0.12.5") do
+    result = :httpc.request(:post, {'http://localhost:8001/eval/elixir/#{version}', [], '', expr}, [], [sync: true])
     case result do
       {:error, _reason} ->
+        IO.inspect _reason
         "*internal service error*"
       {:ok, {status, _headers, data} } ->
         IO.inspect status
@@ -584,8 +585,12 @@ end
 defmodule EvalHook do
   def run(_sender, msg) do
     case msg do
-      "eval~" <> expr ->
-        {:msg, Evaluator.eval(expr)}
+      "eval~ " <> expr ->
+        {:msg, Evaluator.eval(String.strip(expr))}
+
+      "eval~13 " <> expr ->
+        {:msg, Evaluator.eval(String.strip(expr), "0.13")}
+
       _ -> nil
     end
   end
