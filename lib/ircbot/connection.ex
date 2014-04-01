@@ -502,8 +502,14 @@ end
 defmodule TriviaHook do
   def run(_sender, text) do
     tokens = tokenize(text)
-    result = if find_at_least(tokens, [{["mix", "project", "application", "app"], 1}, {["shell", "iex", "repl"], 1}, {["?"], 1}]) do
-      "To start an interactive shell with your mix project loaded in it, run `iex -S mix`"
+    result = cond do
+      find_at_least(tokens, [{["mix", "project", "application", "app"], 1}, {["shell", "iex", "repl"], 1}, {["?"], 1}]) ->
+        "To start an interactive shell with your mix project loaded in it, run `iex -S mix`"
+
+      find_at_least(tokens, [{["records"], 1}, {["remove", "removed"], 1}]) or find_at_least(tokens, [{["records"], 1}, {["replace", "replaced"], 1}, {["maps", "structs"], 1}]) ->
+        "In Elixir v0.13 maps and structs are going to replace records. See this proposal https://gist.github.com/josevalim/b30c881df36801611d13. Privare records remain unchanged."
+
+      true -> nil
     end
     result && {:msg, result}
   end
