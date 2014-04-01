@@ -55,7 +55,7 @@ defmodule IRCBot.Connection do
   @channel "exligir"
   #@channel "elixir-lang"
 
-  defrecordp :hookrec, [type: nil, direct: false, fn: nil]
+  defrecordp :hookrec, [type: nil, direct: false, exclusive: false, fn: nil]
   defrecord State, hooks: []
 
   defp state_add_hook(state, id, f, opts) do
@@ -64,6 +64,8 @@ defmodule IRCBot.Connection do
         hookrec(rec, type: type)
       {:direct, flag}, rec ->
         hookrec(rec, direct: flag)
+      {:exclusive, flag}, rec ->
+        hookrec(rec, exclusive: flag)
     end)
     state.update_hooks(&( &1 ++ [{id, hook}] ))
   end
@@ -133,14 +135,21 @@ defmodule IRCBot.Connection do
     IO.puts "receiver: '#{receiver}', sender: '#{sender}'"
 
     tokens = tokenize(msg)
-    Enum.each(hooks, fn
-      {_, hookrec(type: type, direct: direct, fn: f)} ->
-        if (not direct) || (receiver == @nickname) do
+    Enum.reduce(hooks, 0, fn
+      {_, hookrec(type: type, direct: direct, exclusive: ex, fn: f)}, successes ->
+        if ((not direct) || (receiver == @nickname)) && ((not ex) || (successes == 0)) do
           arg = case type do
             :text  -> if direct do strip_msg_receiver(msg, receiver) else msg end
             :token -> tokens
           end
-          resolve_hook_result(f.(sender, arg), sock)
+
+          if resolve_hook_result(f.(sender, arg), sock) do
+            successes+1
+          else
+            successes
+          end
+        else
+          successes
         end
     end)
   end
@@ -180,7 +189,9 @@ defmodule IRCBot.Connection do
   end
 
   defp resolve_hook_result(messages, sock) when is_list(messages) do
-    Enum.each(messages, &resolve_hook_result(&1, sock))
+    Enum.reduce(messages, nil, fn msg, status ->
+      status || resolve_hook_result(msg, sock)
+    end)
   end
 
 
@@ -597,16 +608,20 @@ defmodule EvalHook do
 end
 
 
-:inets.start
-:ssl.start
-:random.seed(:erlang.now())
-IRCBot.Connection.start_link
-IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text
-IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text
-IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true
-IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text
-IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text
-IRCBot.Connection.add_hook :ping, &PingHook.run/2, in: :text, direct: true
-IRCBot.Connection.add_hook :rudereply, &RudeReplyHook.run/2, in: :text, direct: true
-IRCBot.Connection.add_hook :likewhat, &LikeWhatHook.run/2, in: :text, direct: true
-IRCBot.Connection.add_hook :eval, &EvalHook.run/2, in: :text
+defmodule Bot do
+  def run do
+    :inets.start
+    :ssl.start
+    :random.seed(:erlang.now())
+    IRCBot.Connection.start_link
+    IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text
+    IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text
+    IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true
+    IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text
+    IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text
+    IRCBot.Connection.add_hook :ping, &PingHook.run/2, in: :text, direct: true
+    IRCBot.Connection.add_hook :rudereply, &RudeReplyHook.run/2, in: :text, direct: true, exclusive: true
+    IRCBot.Connection.add_hook :likewhat, &LikeWhatHook.run/2, in: :text, direct: true
+    IRCBot.Connection.add_hook :eval, &EvalHook.run/2, in: :text
+  end
+end
