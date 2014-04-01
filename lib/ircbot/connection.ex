@@ -1,6 +1,8 @@
 defmodule Evaluator do
-  def eval(expr, version \\ "0.12.5") do
-    result = :httpc.request(:post, {'http://localhost:8001/eval/elixir/#{version}', [], '', expr}, [], [sync: true])
+  def eval(expr, opts \\ []) do
+    lang = Keyword.get(opts, :lang, "elixir")
+    version = Keyword.get(opts, :version, "0.12.5")
+    result = :httpc.request(:post, {'http://localhost:8001/eval/#{lang}/#{version}', [], '', expr}, [], [sync: true])
     case result do
       {:error, _reason} ->
         IO.inspect _reason
@@ -216,12 +218,7 @@ defmodule IRCBot.Connection do
     case command do
       'PRIVMSG' ->
         [_chan, msg] = args
-        case msg do
-          "!eval " <> expr ->
-            IO.puts "Eval expr #{expr}"
-            {:reply, Evaluator.eval(expr)}
-          _ -> {:msg, sender, msg}
-        end
+        {:msg, sender, msg}
       'PING' ->
         :pong
       _ -> nil
@@ -607,7 +604,13 @@ defmodule EvalHook do
         {:msg, Evaluator.eval(String.strip(expr))}
 
       "eval~13 " <> expr ->
-        {:msg, Evaluator.eval(String.strip(expr), "0.13")}
+        {:msg, Evaluator.eval(String.strip(expr), version: "0.13")}
+
+      "erleval~ " <> expr ->
+        {:msg, Evaluator.eval(String.strip(expr), lang: "erlang", version: "r16")}
+
+      "erleval~r17 " <> expr ->
+        {:msg, Evaluator.eval(String.strip(expr), lang: "erlang", version: "r17")}
 
       _ -> nil
     end
