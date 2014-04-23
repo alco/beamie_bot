@@ -2,7 +2,7 @@ defmodule Evaluator do
   def eval(expr, opts \\ []) do
     lang = Keyword.get(opts, :lang, "elixir")
     version = Keyword.get(opts, :version)
-    result = :httpc.request(:post, {'http://localhost:8001/eval/#{lang}/#{version}', [], '', expr}, [], [sync: true])
+    result = :httpc.request(:post, {'http://localhost:8000/eval/#{lang}/#{version}', [], '', expr}, [], [sync: true])
     case result do
       {:error, _reason} ->
         IO.inspect _reason
