@@ -14,6 +14,4 @@ defmodule IRCBot.Server do
   def handle_cast({:add_hook, hook}, state) do
     {:noreply, state.update_hooks(fn hooks -> [hooks] ++ [hook] end)}
   end
-
-  def handle_info
 end

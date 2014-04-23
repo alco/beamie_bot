@@ -4,13 +4,13 @@ defmodule Ircbot.Mixfile do
   def project do
     [ app: :ircbot,
       version: "0.0.1",
-      elixir: "~> 0.12.5",
+      elixir: "~> 0.13.0",
       deps: deps ]
   end
 
   # Configuration for the OTP application
   def application do
-    [mod: { Ircbot, [] }, apps: :inets]
+    [mod: { Ircbot, [] }, apps: [:inets, :ssl]]
   end
 
   # Returns the list of dependencies in the format:
