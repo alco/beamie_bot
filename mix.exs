@@ -11,7 +11,7 @@ defmodule Ircbot.Mixfile do
   # Configuration for the OTP application
   def application do
     [mod: { Ircbot, [] },
-     applications: [:inets, :crpto, :ssl]]
+     applications: [:inets, :crypto, :ssl]]
   end
 
   # Returns the list of dependencies in the format:
