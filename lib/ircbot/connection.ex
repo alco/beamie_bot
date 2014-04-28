@@ -60,7 +60,7 @@ defmodule IRCBot.Connection do
         end
 
       {:tcp, ^sock, msg} ->
-        msg = String.from_char_list!(msg) |> String.strip
+        msg = String.from_char_data!(msg) |> String.strip
         case process_msg(msg) do
           {:msg, sender, msg} ->
             try do
@@ -159,7 +159,7 @@ defmodule IRCBot.Connection do
     {prefix, command, args} = parse_msg(msg)
 
     sender = if prefix do
-      case Regex.run(~r"^([^! ]+)(?:$|!)", String.from_char_list!(prefix)) do
+      case Regex.run(~r"^([^! ]+)(?:$|!)", String.from_char_data!(prefix)) do
         [_, sender] -> sender
         other -> IO.puts "bad sender: #{inspect prefix} #{inspect other}"; nil
       end
@@ -195,7 +195,7 @@ defmodule IRCBot.Connection do
   end
 
   defp parse_args(" " <> rest, arg, acc) do
-    parse_args(rest, [], [String.from_char_list!(Enum.reverse(arg))|acc])
+    parse_args(rest, [], [String.from_char_data!(Enum.reverse(arg))|acc])
   end
 
   defp parse_args(":" <> rest, [], acc) do
@@ -207,7 +207,7 @@ defmodule IRCBot.Connection do
   end
 
   defp parse_args("", arg, acc) do
-    Enum.reverse([String.from_char_list!(Enum.reverse(arg))|acc])
+    Enum.reverse([String.from_char_data!(Enum.reverse(arg))|acc])
   end
 
   defp parse_args(<<char::utf8, rest::binary>>, arg, acc) do
