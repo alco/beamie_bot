@@ -8,6 +8,7 @@ defmodule LinkHook do
       "projects" -> @wiki_url <> "Projects"
       "talks"    -> @wiki_url <> "Talks"
       "books"    -> @wiki_url <> "Books"
+      "meetups"  -> @wiki_url <> "Meetups"
       "faq"      -> @wiki_url <> "FAQ"
       "learn"    -> "Blog post covering many of the up-to-date learning resources for Elixir: http://gaslight.co/blog/the-best-resources-for-learning-elixir"
       "ml-talk"  -> ml_talk()
