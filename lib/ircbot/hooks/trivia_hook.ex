@@ -14,6 +14,10 @@ defmodule TriviaHook do
       find_at_least(tokens, [{["mix"], 1}, {["hex", "hex.pm"], 1}, {["?"], 1}]) ->
         "hex.pm hosts packages to be used as dependencies. hex is a command-line tool that interacts with hex.pm and automagically resolves versioning of dependencies. Also see https://groups.google.com/d/msg/elixir-lang-talk/VmSacLsDSXk/fmAxXVn3jC4J"
 
+      find_at_least(tokens, [{["elixir"], 1}, {["package", "packages", "npm", "gem", "gems", "bundler"], 1}, {["?"], 1}]) ->
+        {:msg, msg} = LinkHook.run(_sender, "hex")
+        msg
+
       find_at_least(tokens, [{["elixir"], 1}, {["conference", "conferences"], 1}, {["?"], 1}]) ->
         "ElixirConf is an upcoming conference (July 25-26, 2014 Austin, TX). See http://elixirconf.com/"
 

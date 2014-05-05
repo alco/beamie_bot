@@ -13,6 +13,7 @@ defmodule LinkHook do
       "learn"    -> "Blog post covering many of the up-to-date learning resources for Elixir: http://gaslight.co/blog/the-best-resources-for-learning-elixir"
       "ml-talk"  -> ml_talk()
       "ml-core"  -> ml_core()
+      "hex"      -> "hex is a package manager for Elixir. Browse available packages at https://hex.pm"
       "sips"     -> "Collection of screencasts covering a wide range of topics: http://elixirsips.com"
       "r17osx"   -> "install R17 on OS X: `brew update && brew install --no-docs --devel erlang` or download from https://www.erlang-solutions.com/downloads/download-erlang-otp"
 
