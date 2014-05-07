@@ -5,8 +5,15 @@ defmodule PingHook do
   @num_replies Enum.count(@replies)
 
   def run(sender, text) do
-    if String.downcase(text) == "ping" do
-      {:reply, sender, Enum.at(@replies, :random.uniform(@num_replies)-1)}
+    case String.downcase(text) do
+      "ping" ->
+        if sender == "nox" do
+          {:reply, sender, "<3"}
+        else
+          {:reply, sender, Enum.at(@replies, :random.uniform(@num_replies)-1)}
+        end
+      "ping nox" ->
+        {:reply, "nox", "<3"}
     end
   end
 end
