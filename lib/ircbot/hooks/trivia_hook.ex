@@ -6,13 +6,13 @@ defmodule TriviaHook do
         "To start an interactive shell with your mix project loaded in it, run `iex -S mix`"
 
       find_at_least(tokens, [{["records"], 1}, {["remove", "removed"], 1}]) or find_at_least(tokens, [{["records"], 1}, {["replace", "replaced"], 1}, {["maps", "structs"], 1}]) ->
-        "In Elixir v0.13 maps and structs are going to replace records. See this proposal https://gist.github.com/josevalim/b30c881df36801611d13. Privare records remain unchanged."
+        "In Elixir v0.13 structs have replaced records. See this proposal https://gist.github.com/josevalim/b30c881df36801611d13. Private records remain unchanged."
 
       find_at_least(tokens, [{["mix"], 1}, {["hex"], 1}, {["replace", "replaces"], 1}, {["?"], 1}]) ->
         "hex does not replace mix, it augments it"
 
       find_at_least(tokens, [{["mix"], 1}, {["hex", "hex.pm"], 1}, {["?"], 1}]) ->
-        "hex.pm hosts packages to be used as dependencies. hex is a command-line tool that interacts with hex.pm and automagically resolves versioning of dependencies. Also see https://groups.google.com/d/msg/elixir-lang-talk/VmSacLsDSXk/fmAxXVn3jC4J"
+        "hex.pm hosts packages to be used as dependencies. hex is a command-line tool that interacts with hex.pm and resolves versioning of dependencies. Also see https://groups.google.com/d/msg/elixir-lang-talk/VmSacLsDSXk/fmAxXVn3jC4J"
 
       find_at_least(tokens, [{["elixir"], 1}, {["package", "packages", "npm", "gem", "gems", "bundler"], 1}, {["?"], 1}]) ->
         {:msg, msg} = LinkHook.run(_sender, "hex")
