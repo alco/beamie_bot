@@ -142,7 +142,8 @@ defmodule IRCBot.Connection do
 
   defp resolve_hook_result(messages, sock) when is_list(messages) do
     Enum.reduce(messages, nil, fn msg, status ->
-      status || resolve_hook_result(msg, sock)
+      new_status = resolve_hook_result(msg, sock)
+      status || new_status
     end)
   end
 
