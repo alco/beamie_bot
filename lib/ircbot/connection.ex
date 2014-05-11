@@ -39,6 +39,8 @@ defmodule IRCBot.Connection do
   defp connect(host \\ 'irc.freenode.net', port \\ 6667) do
     {:ok, sock} = :gen_tcp.connect(host, port, packet: :line, active: true)
 
+    :random.seed(:erlang.now())
+
     sock
     |> irc_cmd("PASS", "*")
     |> irc_cmd("NICK", @nickname)

@@ -4,7 +4,6 @@ defmodule Ircbot do
   # See http://elixir-lang.org/docs/stable/Application.Behaviour.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    :random.seed(:erlang.now())
     Bot.run
     #Ircbot.Supervisor.start_link
     {:ok, self()}
