@@ -11,8 +11,8 @@ defmodule TriviaHook do
       find_at_least(tokens, [{["mix"], 1}, {["hex"], 1}, {["replace", "replaces"], 1}, {["?"], 1}]) ->
         "hex does not replace mix, it augments it"
 
-      find_at_least(tokens, [{["mix"], 1}, {["hex", "hex.pm"], 1}, {["?"], 1}]) ->
-        "hex.pm hosts packages to be used as dependencies. hex is a command-line tool that interacts with hex.pm and resolves versioning of dependencies. Also see https://groups.google.com/d/msg/elixir-lang-talk/VmSacLsDSXk/fmAxXVn3jC4J"
+      #find_at_least(tokens, [{["mix"], 1}, {["hex", "hex.pm"], 1}, {["?"], 1}]) ->
+        #"hex.pm hosts packages to be used as dependencies. hex is a command-line tool that interacts with hex.pm and resolves versioning of dependencies. Also see https://groups.google.com/d/msg/elixir-lang-talk/VmSacLsDSXk/fmAxXVn3jC4J"
 
       find_at_least(tokens, [{["elixir"], 1}, {["package", "packages", "npm", "gem", "gems", "bundler"], 1}, {["?"], 1}]) ->
         {:msg, msg} = LinkHook.run(_sender, "hex")
