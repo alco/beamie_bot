@@ -14,6 +14,8 @@ defmodule PingHook do
         end
       "ping nox" ->
         {:reply, "nox", "<3"}
+
+      _ -> nil
     end
   end
 end
