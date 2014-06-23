@@ -7,28 +7,29 @@ defmodule LinkScanHook do
     module_re = ~r"(?<=&|^| )#{mid}(?=~)"
     fun_re    = ~r"(?<=&|^| )#{fid}(?:/(\d))?(?=~)"
     mfa_re    = ~r"(?<=&|^| )#{mid}\.#{fid}(?:/\d)?(?=~)"
+    twitter_re = ~r"(?<=\s|^)@([a-zA-Z_]+)"
 
-    (
-    Regex.scan(~r"\b([-_[:alnum:]]+)~", text)
-    |> mapf(fn [_, word] ->
-         LinkHook.run(sender, word)
-       end)
-    ) ++ (
-    Regex.scan(module_re, text)
-    |> flatmapf(fn [thing] ->
-         DocHook.run(sender, "doc " <> thing)
-       end)
-    ) ++ (
-    Regex.scan(fun_re, text)
-    |> flatmapf(fn [thing] ->
-         DocHook.run(sender, "doc " <> thing)
-       end)
-    ) ++ (
-    Regex.scan(mfa_re, text)
-    |> flatmapf(fn [thing] ->
-         DocHook.run(sender, "doc " <> thing)
-       end)
-    )
+    mapf(Regex.scan(~r"\b([-_[:alnum:]]+)~", text), fn [_, word] ->
+      LinkHook.run(sender, word)
+    end)
+    ++
+    flatmapf(Regex.scan(module_re, text), fn [thing] ->
+      DocHook.run(sender, "doc " <> thing)
+    end)
+    ++
+    flatmapf(Regex.scan(fun_re, text), fn [thing] ->
+      DocHook.run(sender, "doc " <> thing)
+    end)
+    ++
+    flatmapf(Regex.scan(mfa_re, text), fn [thing] ->
+      DocHook.run(sender, "doc " <> thing)
+    end)
+    ++
+    mapf(Regex.scan(twitter_re, text), fn [_, name] ->
+      if String.contains?(String.downcase(text), "twitter") do
+        {:msg, "https://twitter.com/#{name}"}
+      end
+    end)
   end
 
   defp mapf(c, f) do
