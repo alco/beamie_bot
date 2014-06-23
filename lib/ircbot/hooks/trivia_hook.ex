@@ -80,7 +80,7 @@ defmodule TriviaHook do
       {:error, _reason} ->
         IO.inspect _reason
         nil
-      {:ok, {status, headers, data} } ->
+      {:ok, {status, headers, _data} } ->
         #IO.inspect status
         #IO.inspect headers
         case status do
