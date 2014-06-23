@@ -3,8 +3,12 @@ defmodule IRCBot.Connection do
   #@channel "exligir"
   @channel "elixir-lang"
 
-  defrecordp :hookrec, [type: nil, direct: false, exclusive: false, fn: nil]
-  defrecord State, hooks: []
+  require Record
+
+  Record.defrecordp :hookrec, [type: nil, direct: false, exclusive: false, fn: nil]
+
+  alias __MODULE__, as: State
+  defstruct hooks: []
 
   defp state_add_hook(state, id, f, opts) do
     hook = Enum.reduce(opts, hookrec(fn: f), fn
@@ -15,11 +19,11 @@ defmodule IRCBot.Connection do
       {:exclusive, flag}, rec ->
         hookrec(rec, exclusive: flag)
     end)
-    state.update_hooks(&( &1 ++ [{id, hook}] ))
+    Map.update!(state, :hooks, &( &1 ++ [{id, hook}] ))
   end
 
-  defp state_remove_hook(state=State[hooks: hooks], id) do
-    state.hooks(Keyword.delete(hooks, id))
+  defp state_remove_hook(state=%State{hooks: hooks}, id) do
+    %{state | hooks: Keyword.delete(hooks, id)}
   end
 
 
@@ -29,11 +33,11 @@ defmodule IRCBot.Connection do
   end
 
   def add_hook(id, f, opts \\ []) do
-    Process.send(__MODULE__, {:internal, {:add_hook, id, f, opts}})
+    send(__MODULE__, {:internal, {:add_hook, id, f, opts}})
   end
 
   def remove_hook(id) do
-    Process.send(__MODULE__, {:internal, {:remove_hook, id}})
+    send(__MODULE__, {:internal, {:remove_hook, id}})
   end
 
   defp connect(host \\ 'irc.freenode.net', port \\ 6667) do
@@ -46,7 +50,7 @@ defmodule IRCBot.Connection do
     |> irc_cmd("NICK", @nickname)
     |> irc_cmd("USER", "#{@nickname} 0 * :BEAM")
     |> irc_cmd("JOIN", "\##{@channel}")
-    |> message_loop(State.new)
+    |> message_loop(%State{})
   end
 
   defp message_loop(sock, state) do
@@ -62,7 +66,7 @@ defmodule IRCBot.Connection do
         end
 
       {:tcp, ^sock, msg} ->
-        msg = String.from_char_data!(msg) |> String.strip
+        msg = List.to_string(msg) |> String.strip
         case process_msg(msg) do
           {:msg, sender, msg} ->
             try do
@@ -84,7 +88,7 @@ defmodule IRCBot.Connection do
     message_loop(sock, state)
   end
 
-  def process_hooks({sender, msg}, State[hooks: hooks], sock) do
+  def process_hooks({sender, msg}, %State{hooks: hooks}, sock) do
     receiver = get_message_receiver(msg)
     IO.puts "receiver: '#{receiver}', sender: '#{sender}'"
 
@@ -162,7 +166,7 @@ defmodule IRCBot.Connection do
     {prefix, command, args} = parse_msg(msg)
 
     sender = if prefix do
-      case Regex.run(~r"^([^! ]+)(?:$|!)", String.from_char_data!(prefix)) do
+      case Regex.run(~r"^([^! ]+)(?:$|!)", List.to_string(prefix)) do
         [_, sender] -> sender
         other -> IO.puts "bad sender: #{inspect prefix} #{inspect other}"; nil
       end
@@ -172,6 +176,8 @@ defmodule IRCBot.Connection do
       'PRIVMSG' ->
         [_chan, msg] = args
         {:msg, sender, msg}
+      '332' ->
+        {:reply, "Greetings, apprentices"}
       'PING' ->
         :pong
       _ -> nil
@@ -198,7 +204,7 @@ defmodule IRCBot.Connection do
   end
 
   defp parse_args(" " <> rest, arg, acc) do
-    parse_args(rest, [], [String.from_char_data!(Enum.reverse(arg))|acc])
+    parse_args(rest, [], [List.to_string(Enum.reverse(arg))|acc])
   end
 
   defp parse_args(":" <> rest, [], acc) do
@@ -210,7 +216,7 @@ defmodule IRCBot.Connection do
   end
 
   defp parse_args("", arg, acc) do
-    Enum.reverse([String.from_char_data!(Enum.reverse(arg))|acc])
+    Enum.reverse([List.to_string(Enum.reverse(arg))|acc])
   end
 
   defp parse_args(<<char::utf8, rest::binary>>, arg, acc) do

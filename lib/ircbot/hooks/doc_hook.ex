@@ -18,7 +18,7 @@ defmodule DocHook do
     modname = case Regex.run(re, text) do
       [_, modname] ->
         mod = Module.concat([modname])
-        case (Code.ensure_loaded?(mod) && mod.__info__(:moduledoc)) do
+        case Code.ensure_loaded?(mod) && Code.get_docs(mod, :moduledoc) do
           {_, doc} -> doc && modname
           _        -> nil
         end
@@ -32,7 +32,7 @@ defmodule DocHook do
       [_, fname] ->
         process_module("Kernel", fname, :all)
       [_, fname, arity] ->
-        process_module("Kernel", fname, binary_to_integer(arity))
+        process_module("Kernel", fname, String.to_integer(arity))
       _ -> nil
     end
   end
@@ -42,7 +42,7 @@ defmodule DocHook do
       [_, modname, fname] ->
         process_module(modname, fname, :all)
       [_, modname, fname, arity] ->
-        process_module(modname, fname, binary_to_integer(arity))
+        process_module(modname, fname, String.to_integer(arity))
       _ -> nil
     end
   end
@@ -50,7 +50,7 @@ defmodule DocHook do
   defp process_module(modname, fname, arity) do
     mod = Module.concat([modname])
     fun = try do
-      binary_to_existing_atom(fname)
+      String.to_existing_atom(fname)
     rescue
       ArgumentError -> nil
     end
@@ -70,7 +70,7 @@ defmodule DocHook do
   end
 
   defp check_doc(mod, fun, arity) do
-    case List.keyfind(mod.__info__(:docs), {fun, arity}, 0) do
+    case List.keyfind(Code.get_docs(mod, :docs), {fun, arity}, 0) do
       {_fun, _line, _typ, _args, doc} ->
         doc && arity
       _ -> nil
@@ -78,10 +78,18 @@ defmodule DocHook do
   end
 
   defp make_module_url(modname) do
-    "http://elixir-lang.org/docs/master/#{modname}.html"
+    "http://elixir-lang.readthedocs.org/en/latest/ref/master/#{section(modname)}/#{modname}"
   end
 
   defp make_mfa_url(modname, fname, arity) do
-    "http://elixir-lang.org/docs/master/#{modname}.html\##{fname}/#{arity}"
+    "http://elixir-lang.readthedocs.org/en/latest/ref/master/#{section(modname)}/#{modname}/##{modname}.#{fname}/#{arity}"
+  end
+
+  defp section(modname) do
+    comps = String.split(modname, ".")
+    case String.downcase(hd(comps)) do
+      x when x in ["mix", "iex", "eex", "exunit"] -> x
+      _ -> "elixir"
+    end
   end
 end

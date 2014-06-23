@@ -1,14 +1,15 @@
 defmodule EvalHook do
   def run(_sender, msg) do
-    {expr, opts} = case msg do
+    result = case msg do
       "eval~ " <> expr ->
         {expr, version: "latest"}
 
-      "eval~0.13.0 " <> expr ->
-        {expr, version: "v0.13.0"}
-
-      "eval~0.12.5 " <> expr ->
-        {expr, version: "v0.12.5"}
+      "eval~" <> rest ->
+        case Regex.run(~r/([^ ]+)(.+)$/, rest) do
+          [_, version, expr] ->
+            {expr, version: "v"<>version}
+          _ -> nil
+        end
 
       "erleval~ " <> expr ->
         {expr, lang: "erlang", version: "17.0"}
@@ -19,12 +20,16 @@ defmodule EvalHook do
       _ -> nil
     end
 
-    expr = String.strip(expr)
-    output = Evaluator.eval(expr, opts)
+    if result do
+      {expr, opts} = result
 
-    if output do
-      lines = String.split(output, "\n")
-      lines_to_msg(lines, {expr, output})
+      expr = String.strip(expr)
+      output = Evaluator.eval(expr, opts)
+
+      if output do
+        lines = String.split(output, "\n")
+        lines_to_msg(lines, {expr, output})
+      end
     end
   end
 
@@ -67,7 +72,7 @@ defmodule EvalHook do
         IO.inspect status
         case status do
           {_, 201, _} ->
-            json = String.from_char_data!(data)
+            json = List.to_string(data)
             case Regex.run(~r/"html_url":\s*"([^"]+)",/, json) do
               [_, url] -> url
               _        -> "*failed to gist the output*"

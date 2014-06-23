@@ -9,7 +9,7 @@ defmodule Evaluator do
         "*internal service error*"
       {:ok, {status, _headers, data} } ->
         IO.inspect status
-        reply = data |> String.from_char_data! |> String.strip
+        reply = data |> List.to_string |> String.strip
         IO.puts "replying with #{reply}"
         reply
     end

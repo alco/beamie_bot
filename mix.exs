@@ -4,21 +4,15 @@ defmodule Ircbot.Mixfile do
   def project do
     [ app: :ircbot,
       version: "0.0.1",
-      elixir: "~> 0.13.0",
+      elixir: "~> 0.14.0",
       deps: deps ]
   end
 
-  # Configuration for the OTP application
   def application do
     [mod: { Ircbot, [] },
      applications: [:inets, :crypto, :ssl]]
   end
 
-  # Returns the list of dependencies in the format:
-  # { :foobar, git: "https://github.com/elixir-lang/foobar.git", tag: "0.1" }
-  #
-  # To specify particular versions, regardless of the tag, do:
-  # { :barbat, "~> 0.1", github: "elixir-lang/barbat" }
   defp deps do
     []
   end
