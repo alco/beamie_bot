@@ -2,10 +2,10 @@ defmodule EvalHook do
   def run(_sender, msg) do
     result = case msg do
       "eval~ " <> expr ->
-        {expr, version: "latest"}
+        {expr, version: "v0.14.0"}
 
       "eval~" <> rest ->
-        case Regex.run(~r/([^ ]+)(.+)$/, rest) do
+        case Regex.run(~r/([\d.]+)(.+)$/, rest) do
           [_, version, expr] ->
             {expr, version: "v"<>version}
           _ -> nil
