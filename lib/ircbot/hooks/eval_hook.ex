@@ -49,13 +49,15 @@ defmodule EvalHook do
 
   defp gist_text({expr, output}) do
     output = "# #{escape_newlines(expr)}\n" <> output
+    # replace \# with # in the json
+    inspected = Regex.replace(~r/(?<=[^\\])\\#/, inspect(output), "#")
     json = """
     {
       "description": "",
       "public": true,
       "files": {
         "output": {
-          "content": #{inspect output}
+          "content": #{inspected}
         }
       }
     }
