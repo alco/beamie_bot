@@ -75,6 +75,7 @@ defmodule IRCBot.Connection do
     |> irc_cmd("PASS", "*")
     |> irc_cmd("NICK", @nickname)
     |> irc_cmd("USER", "#{@nickname} 0 * :BEAM")
+    |> irc_cmd("PRIVMSG", "NickServ :identify #{System.get_env("BEAMIE_BOT_PWD")}")
     |> irc_cmd("JOIN", "\##{@channel}")
     |> message_loop(%State{})
   end
