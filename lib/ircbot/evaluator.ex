@@ -2,14 +2,19 @@ defmodule Evaluator do
   def eval(expr, opts \\ []) do
     lang = Keyword.get(opts, :lang, "elixir")
     version = Keyword.get(opts, :version)
-    case Application.get_env(:ircbot, :evalhost) do
-      {hostname, port} ->
-        url = 'http://#{hostname}:#{port}/eval/#{lang}/#{version}'
-        result = :httpc.request(:post, {url, [], '', expr}, [], [sync: true])
-        process_result(result)
-      _ ->
-        IO.puts "Broken env"
-        "*internal service error*"
+
+    hostname = System.get_env("BEAMIE_HOST")
+    port = System.get_env("BEAMIE_PORT")
+
+    if hostname != "" and port != "" do
+      url = 'http://#{hostname}:#{port}/eval/#{lang}/#{version}'
+      result = :httpc.request(:post, {url, [], '', expr}, [], [sync: true])
+      process_result(result)
+    else
+      IO.puts "Broken env"
+      IO.puts "BEAMIE_HOST=#{hostname}"
+      IO.puts "BEAMIE_PORT=#{port}"
+      "*internal service error*"
     end
   end
 
