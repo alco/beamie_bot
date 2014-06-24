@@ -135,23 +135,26 @@ defmodule IRCBot.Connection do
 
   def process_hooks({sender, msg}, %State{hooks: hooks}, sock) do
     receiver = get_message_receiver(msg)
-    IO.puts "receiver: '#{receiver}', sender: '#{sender}'"
+    #IO.puts "receiver: '#{receiver}', sender: '#{sender}'"
 
     tokens = tokenize(msg)
     Enum.reduce(hooks, 0, fn
       {_, hookrec(type: type, direct: direct, exclusive: ex, fn: f)}, successes ->
+	#IO.puts "testing hook: #{inspect f}"
         if ((not direct) || (receiver == @nickname)) && ((not ex) || (successes == 0)) do
           arg = case type do
             :text  -> if direct do strip_msg_receiver(msg, receiver) else msg end
             :token -> tokens
           end
 
+	  #IO.puts "applying hook: #{inspect f}"
           if resolve_hook_result(f.(sender, arg), sock) do
             successes+1
           else
             successes
           end
         else
+	  #IO.puts "skipping hook: #{inspect f}"
           successes
         end
     end)
