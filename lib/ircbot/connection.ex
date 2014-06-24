@@ -126,10 +126,10 @@ defmodule IRCBot.Connection do
         nil
     end
     if state do
-      message_loop(sock, state)
+      __MODULE__.message_loop(sock, state)
     else
       sleep_sec(@nsec)
-      connect()
+      __MODULE__.connect()
     end
   end
 
