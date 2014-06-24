@@ -47,7 +47,7 @@ defmodule IRCBot.Connection do
 
   defp sleep_sec(n), do: :timer.sleep(n * 1000)
 
-  defp connect(host \\ 'irc.freenode.net', port \\ 6667) do
+  def connect(host \\ 'irc.freenode.net', port \\ 6667) do
     case :gen_tcp.connect(host, port, packet: :line, active: true) do
       {:ok, sock} ->
         Process.delete(:connect_attempts)
@@ -80,7 +80,7 @@ defmodule IRCBot.Connection do
     |> message_loop(%State{})
   end
 
-  defp message_loop(sock, state) do
+  def message_loop(sock, state) do
     state = receive do
       {:internal, msg} ->
         case msg do
