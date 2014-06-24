@@ -222,8 +222,13 @@ defmodule IRCBot.Connection do
 
     case command do
       'PRIVMSG' ->
-        [_chan, msg] = args
-        {:msg, sender, msg}
+        [chan, msg] = args
+        if chan == @nickname do
+          # ignore private messages
+          nil
+        else
+          {:msg, sender, msg}
+        end
       #'332' ->
         #{:reply, "Greetings, apprentices"}
       'PING' ->
