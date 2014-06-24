@@ -40,9 +40,35 @@ defmodule IRCBot.Connection do
     send(__MODULE__, {:internal, {:remove_hook, id}})
   end
 
-  defp connect(host \\ 'irc.freenode.net', port \\ 6667) do
-    {:ok, sock} = :gen_tcp.connect(host, port, packet: :line, active: true)
 
+  @nsec 10
+  @ping_sec 5 * 60
+  @maxattempts 30
+
+  defp sleep_sec(n), do: :timer.sleep(n * 1000)
+
+  defp connect(host \\ 'irc.freenode.net', port \\ 6667) do
+    case :gen_tcp.connect(host, port, packet: :line, active: true) do
+      {:ok, sock} ->
+        Process.delete(:connect_attempts)
+        handshake(sock)
+
+      other ->
+        IO.puts "Failed to connect: #{inspect other}"
+        nattempts = Process.get(:connect_attempts, 0)
+        if nattempts >= @maxattempts do
+          IO.puts "FAILED TO CONNECT #{@maxattempts} TIMES IN A ROW. SHUTTING DOWN"
+          :erlang.halt()
+        else
+          Process.put(:connect_attempts, nattempts+1)
+          IO.puts "RETRYING IN #{@nsec} SECONDS"
+          sleep_sec(@nsec)
+          connect(host, port)
+        end
+    end
+  end
+
+  defp handshake(sock) do
     :random.seed(:erlang.now())
 
     sock
@@ -82,10 +108,28 @@ defmodule IRCBot.Connection do
         end
         state
 
+      {:tcp_closed, ^sock} ->
+        IO.puts "SOCKET CLOSE; RETRYING CONNECT IN #{@nsec} SECONDS"
+        nil
+
+      {:tcp_error, ^sock, reason} ->
+        IO.puts "SOCKET ERROR: #{inspect reason}\nRETRYING CONNECT IN #{@nsec} SECONDS"
+        nil
+
       other ->
         raise RuntimeError[message: "unhandled msg #{inspect other}"]
+
+      after @ping_sec * 1000 ->
+        IO.puts "No ping message in #{@ping_sec} seconds. Retrying connect."
+        :gen_tcp.close(sock)
+        nil
     end
-    message_loop(sock, state)
+    if state do
+      message_loop(sock, state)
+    else
+      sleep_sec(@nsec)
+      connect()
+    end
   end
 
   def process_hooks({sender, msg}, %State{hooks: hooks}, sock) do
@@ -176,8 +220,8 @@ defmodule IRCBot.Connection do
       'PRIVMSG' ->
         [_chan, msg] = args
         {:msg, sender, msg}
-      '332' ->
-        {:reply, "Greetings, apprentices"}
+      #'332' ->
+        #{:reply, "Greetings, apprentices"}
       'PING' ->
         :pong
       _ -> nil
