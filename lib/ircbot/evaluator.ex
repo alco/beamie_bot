@@ -2,17 +2,27 @@ defmodule Evaluator do
   def eval(expr, opts \\ []) do
     lang = Keyword.get(opts, :lang, "elixir")
     version = Keyword.get(opts, :version)
-    result = :httpc.request(:post, {'http://localhost:8000/eval/#{lang}/#{version}', [], '', expr}, [], [sync: true])
-    case result do
-      {:error, _reason} ->
-        IO.inspect _reason
+    case Application.get_env(:ircbot, :evalhost) do
+      {hostname, port} ->
+        url = 'http://#{hostname}:#{port}/eval/#{lang}/#{version}'
+        result = :httpc.request(:post, {url, [], '', expr}, [], [sync: true])
+        process_result(result)
+      _ ->
+        IO.puts "Broken env"
         "*internal service error*"
-      {:ok, {status, _headers, data} } ->
-        IO.inspect status
-        reply = data |> List.to_string |> String.strip
-        IO.puts "replying with #{reply}"
-        reply
     end
+  end
+
+  defp process_result({:error, _reason}) do
+    IO.inspect _reason
+    "*internal service error*"
+  end
+
+  defp process_result({:ok, {status, _headers, data} }) do
+    IO.inspect status
+    reply = data |> List.to_string |> String.strip
+    IO.puts "replying with #{reply}"
+    reply
   end
 
   def _eval(expr) do
