@@ -194,6 +194,10 @@ defmodule IRCBot.Connection do
     irc_cmd(sock, "PRIVMSG", "\##{@channel} :#{text}")
   end
 
+  defp resolve_hook_result({:notice, text}, sock) do
+    irc_cmd(sock, "NOTICE", "\##{@channel} :#{text}")
+  end
+
   defp resolve_hook_result(messages, sock) when is_list(messages) do
     Enum.reduce(messages, nil, fn msg, status ->
       new_status = resolve_hook_result(msg, sock)
