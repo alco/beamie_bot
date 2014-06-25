@@ -23,9 +23,13 @@ defmodule EvalHook do
       expr = String.strip(expr)
       output = Evaluator.eval(expr, opts)
 
-      if output do
-        lines = String.split(output, "\n")
-        lines_to_msg(lines, {expr, output})
+      cond do
+        output == "Timed out." ->
+          {:notice, output}
+        output ->
+          lines = String.split(output, "\n")
+          lines_to_msg(lines, {expr, output})
+        true -> nil
       end
     end
   end
