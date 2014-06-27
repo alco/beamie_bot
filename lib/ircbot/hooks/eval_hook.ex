@@ -14,6 +14,9 @@ defmodule EvalHook do
       "erleval~ " <> expr ->
         {expr, lang: "erlang", version: "17.0"}
 
+      "erleval~r16 " <> expr ->
+        {expr, lang: "erlang", version: "R16B03-1"}
+
       _ -> nil
     end
 
