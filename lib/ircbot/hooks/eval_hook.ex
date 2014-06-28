@@ -2,7 +2,7 @@ defmodule EvalHook do
   def run(_sender, msg) do
     result = case msg do
       "eval~ " <> expr ->
-        {expr, version: "v0.14.1"}
+        {expr, version: "master"}
 
       "eval~" <> rest ->
         case Regex.run(~r/([\d.]+)(.+)$/, rest) do
