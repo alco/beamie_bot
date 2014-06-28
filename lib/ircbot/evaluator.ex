@@ -8,7 +8,7 @@ defmodule Evaluator do
 
     if hostname != "" and port != "" do
       url = 'http://#{hostname}:#{port}/eval/#{lang}/#{version}'
-      result = :httpc.request(:post, {url, [], '', expr}, [], [sync: true])
+      result = :httpc.request(:post, {url, [], '', expr}, [timeout: 2000], [sync: true])
       process_result(result)
     else
       IO.puts "Broken env"
