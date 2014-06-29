@@ -11,8 +11,15 @@ defmodule EvalHook do
           _ -> nil
         end
 
-      "erleval~ " <> expr ->
-        {expr, lang: "erlang", version: "17.0"}
+      "erleval~" <> expr ->
+        {expr, lang: "erlang", version: "17.1"}
+
+      "erleval~" <> expr ->
+        case Regex.run(~r/([\d.]+)(.+)$/, rest) do
+          [_, version, expr] ->
+            {expr, lang: "erlang", version: version}
+          _ -> nil
+        end
 
       "erleval~r16 " <> expr ->
         {expr, lang: "erlang", version: "R16B03-1"}
