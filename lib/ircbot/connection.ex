@@ -1,7 +1,7 @@
 defmodule IRCBot.Connection do
   @nickname "beamie"
   #@channel "exligir"
-  @channel "elixir-lang"
+  @channels ["elixir-lang", "exligir"]
 
   require Record
 
@@ -76,8 +76,15 @@ defmodule IRCBot.Connection do
     |> irc_cmd("NICK", @nickname)
     |> irc_cmd("USER", "#{@nickname} 0 * :BEAM")
     |> irc_cmd("PRIVMSG", "NickServ :identify #{System.get_env("BEAMIE_BOT_PWD")}")
-    |> irc_cmd("JOIN", "\##{@channel}")
+    |> join_channels(@channels)
     |> message_loop(%State{})
+  end
+
+  defp join_channels(sock, list) do
+    Enum.each(list, fn chan ->
+      irc_cmd(sock, "JOIN", "\##{chan}")
+    end)
+    sock
   end
 
   def message_loop(sock, state) do
@@ -95,14 +102,14 @@ defmodule IRCBot.Connection do
       {:tcp, ^sock, msg} ->
         msg = List.to_string(msg) |> String.strip
         case process_msg(msg) do
-          {:msg, sender, msg} ->
+          {:msg, chan, sender, msg} ->
             try do
-              process_hooks({sender, msg}, state, sock)
+              process_hooks({chan, sender, msg}, state, sock)
             rescue
               x -> IO.inspect x
             end
-          {:reply, reply} ->
-            irc_cmd(sock, "PRIVMSG", "\##{@channel} :#{reply}")
+          {:reply, chan, reply} ->
+            irc_cmd(sock, "PRIVMSG", "\##{chan} :#{reply}")
           :pong ->
             irc_cmd(sock, "PONG", @nickname)
           _ -> nil
@@ -133,7 +140,7 @@ defmodule IRCBot.Connection do
     end
   end
 
-  def process_hooks({sender, msg}, %State{hooks: hooks}, sock) do
+  def process_hooks({chan, sender, msg}, %State{hooks: hooks}, sock) do
     receiver = get_message_receiver(msg)
     #IO.puts "receiver: '#{receiver}', sender: '#{sender}'"
 
@@ -148,7 +155,7 @@ defmodule IRCBot.Connection do
           end
 
 	  #IO.puts "applying hook: #{inspect f}"
-          if resolve_hook_result(f.(sender, arg), sock) do
+          if resolve_hook_result(f.(sender, arg), chan, sock) do
             successes+1
           else
             successes
@@ -178,29 +185,29 @@ defmodule IRCBot.Connection do
     String.split(msg, ~r"[[:space:]]")
   end
 
-  defp resolve_hook_result(nil, _sock) do
+  defp resolve_hook_result(nil, _chan, _sock) do
     nil
   end
 
-  defp resolve_hook_result({:reply, text}, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{@channel} #{@nickname}: :#{text}")
+  defp resolve_hook_result({:reply, text}, chan, sock) do
+    irc_cmd(sock, "PRIVMSG", "\##{chan} #{@nickname}: :#{text}")
   end
 
-  defp resolve_hook_result({:reply, to, text}, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{@channel} :#{to}: #{text}")
+  defp resolve_hook_result({:reply, to, text}, chan, sock) do
+    irc_cmd(sock, "PRIVMSG", "\##{chan} :#{to}: #{text}")
   end
 
-  defp resolve_hook_result({:msg, text}, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{@channel} :#{text}")
+  defp resolve_hook_result({:msg, text}, chan, sock) do
+    irc_cmd(sock, "PRIVMSG", "\##{chan} :#{text}")
   end
 
-  defp resolve_hook_result({:notice, text}, sock) do
-    irc_cmd(sock, "NOTICE", "\##{@channel} :#{text}")
+  defp resolve_hook_result({:notice, text}, chan, sock) do
+    irc_cmd(sock, "NOTICE", "\##{chan} :#{text}")
   end
 
-  defp resolve_hook_result(messages, sock) when is_list(messages) do
+  defp resolve_hook_result(messages, chan, sock) when is_list(messages) do
     Enum.reduce(messages, nil, fn msg, status ->
-      new_status = resolve_hook_result(msg, sock)
+      new_status = resolve_hook_result(msg, chan, sock)
       status || new_status
     end)
   end
@@ -214,7 +221,6 @@ defmodule IRCBot.Connection do
 
   defp process_msg(msg) do
     IO.puts msg
-
     {prefix, command, args} = parse_msg(msg)
 
     sender = if prefix do
@@ -231,10 +237,10 @@ defmodule IRCBot.Connection do
           # ignore private messages
           nil
         else
-          {:msg, sender, msg}
+          {:msg, chan, sender, msg}
         end
       #'332' ->
-        #{:reply, "Greetings, apprentices"}
+        #{:reply, chan, "Greetings, apprentices"}
       'PING' ->
         :pong
       _ -> nil

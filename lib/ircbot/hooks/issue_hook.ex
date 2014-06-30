@@ -1,6 +1,6 @@
 defmodule IssueHook do
   def run(_sender, text) do
-    IO.puts "Testing text for issues: '#{text}'"
+    #IO.puts "Testing text for issues: '#{text}'"
     Regex.scan(~r"(?: |^)([[:alpha:]]+)?#(\d+)(?:(?=[[:space:]])|$)|issue[[:space:]]+#?(\d+)(?:(?=[[:space:]])|$)", text)
     |> Enum.map(fn [_, proj, num] -> {proj, num} end)
     #|> pfilter(&issue_valid?/1)
