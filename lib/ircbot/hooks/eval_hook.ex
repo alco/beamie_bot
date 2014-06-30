@@ -1,25 +1,24 @@
 defmodule EvalHook do
   def run(_sender, msg) do
     result = case msg do
+      "~~ " <> expr -> {expr, version: "master"}
+      "~~" <> rest  -> parse_version(rest, "elixir", "v")
+
+      "erl~ " <> expr    ->  {expr, lang: "erlang", version: "17.1"}
+      "erl~r16 " <> expr ->  {expr, lang: "erlang", version: "R16B03-1"}
+      "erl~" <> rest     -> parse_version(rest, "erlang")
+
       "eval~ " <> expr ->
         {expr, version: "master"}
 
       "eval~" <> rest ->
-        case Regex.run(~r/([\d.]+)(.+)$/, rest) do
-          [_, version, expr] ->
-            {expr, version: "v"<>version}
-          _ -> nil
-        end
+        parse_version(rest, "elixir", "v")
 
       "erleval~ " <> expr ->
         {expr, lang: "erlang", version: "17.1"}
 
       "erleval~" <> rest ->
-        case Regex.run(~r/([\d.]+)(.+)$/, rest) do
-          [_, version, expr] ->
-            {expr, lang: "erlang", version: version}
-          _ -> nil
-        end
+        parse_version(rest, "erlang")
 
       "erleval~r16 " <> expr ->
         {expr, lang: "erlang", version: "R16B03-1"}
@@ -41,6 +40,14 @@ defmodule EvalHook do
           lines_to_msg(lines, {expr, output})
         true -> nil
       end
+    end
+  end
+
+  defp parse_version(str, lang, prefix \\ "") do
+    case Regex.run(~r/([\d.]+)(.+)$/, str) do
+      [_, version, expr] ->
+        {expr, lang: lang, version: prefix<>version}
+      _ -> nil
     end
   end
 
