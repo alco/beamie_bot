@@ -4,9 +4,11 @@ defmodule EvalHook do
       "~~ " <> expr -> {expr, version: "master"}
       "~~" <> rest  -> parse_version(rest, "elixir", "v")
 
-      "erl~ " <> expr    ->  {expr, lang: "erlang", version: "17.1"}
-      "erl~r16 " <> expr ->  {expr, lang: "erlang", version: "R16B03-1"}
+      "erl~ " <> expr    -> {expr, lang: "erlang", version: "17.1"}
+      "erl~r16 " <> expr -> {expr, lang: "erlang", version: "R16B03-1"}
       "erl~" <> rest     -> parse_version(rest, "erlang")
+
+      "lfe~ " <> rest -> {expr, lang: "lfe", version: "latest"}
 
       "eval~ " <> expr ->
         {expr, version: "master"}
