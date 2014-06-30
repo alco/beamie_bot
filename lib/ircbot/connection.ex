@@ -109,7 +109,7 @@ defmodule IRCBot.Connection do
               x -> IO.inspect x
             end
           {:reply, chan, reply} ->
-            irc_cmd(sock, "PRIVMSG", "\##{chan} :#{reply}")
+            irc_cmd(sock, "PRIVMSG", "#{chan} :#{reply}")
           :pong ->
             irc_cmd(sock, "PONG", @nickname)
           _ -> nil
@@ -190,19 +190,19 @@ defmodule IRCBot.Connection do
   end
 
   defp resolve_hook_result({:reply, text}, chan, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{chan} #{@nickname}: :#{text}")
+    irc_cmd(sock, "PRIVMSG", "#{chan} #{@nickname}: :#{text}")
   end
 
   defp resolve_hook_result({:reply, to, text}, chan, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{chan} :#{to}: #{text}")
+    irc_cmd(sock, "PRIVMSG", "#{chan} :#{to}: #{text}")
   end
 
   defp resolve_hook_result({:msg, text}, chan, sock) do
-    irc_cmd(sock, "PRIVMSG", "\##{chan} :#{text}")
+    irc_cmd(sock, "PRIVMSG", "#{chan} :#{text}")
   end
 
   defp resolve_hook_result({:notice, text}, chan, sock) do
-    irc_cmd(sock, "NOTICE", "\##{chan} :#{text}")
+    irc_cmd(sock, "NOTICE", "#{chan} :#{text}")
   end
 
   defp resolve_hook_result(messages, chan, sock) when is_list(messages) do
