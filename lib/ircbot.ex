@@ -13,11 +13,11 @@ end
 defmodule Bot do
   def run do
     IRCBot.Connection.start_link
-    IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text
-    IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text
-    IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true
-    IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text
-    IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text
+    IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text, channel: "exligir"
+    IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text, channel: "elixir-lang"
+    IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true, channel: "elixir-lang"
+    IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text, channel: "elixir-lang"
+    IRCBot.Connection.add_hook :trivia, &TriviaHook.run/2, in: :text, channel: "elixir-lang"
     IRCBot.Connection.add_hook :ping, &PingHook.run/2, in: :text, direct: true
     IRCBot.Connection.add_hook :likewhat, &LikeWhatHook.run/2, in: :text, direct: true
     IRCBot.Connection.add_hook :eval, &EvalHook.run/2, in: :text

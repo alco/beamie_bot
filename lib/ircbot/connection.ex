@@ -5,7 +5,7 @@ defmodule IRCBot.Connection do
 
   require Record
 
-  Record.defrecordp :hookrec, [type: nil, direct: false, exclusive: false, fn: nil]
+  Record.defrecordp :hookrec, [type: nil, direct: false, exclusive: false, fn: nil, chan: nil]
 
   alias __MODULE__, as: State
   defstruct hooks: []
@@ -18,6 +18,8 @@ defmodule IRCBot.Connection do
         hookrec(rec, direct: flag)
       {:exclusive, flag}, rec ->
         hookrec(rec, exclusive: flag)
+      {:channel, chan}, rec ->
+        hookrec(rec, chan: chan)
     end)
     Map.update!(state, :hooks, &( &1 ++ [{id, hook}] ))
   end
@@ -146,22 +148,26 @@ defmodule IRCBot.Connection do
 
     tokens = tokenize(msg)
     Enum.reduce(hooks, 0, fn
-      {_, hookrec(type: type, direct: direct, exclusive: ex, fn: f)}, successes ->
+      {_, hookrec(type: type, direct: direct, exclusive: ex, fn: f, chan: hook_chan)}, successes ->
 	#IO.puts "testing hook: #{inspect f}"
-        if ((not direct) || (receiver == @nickname)) && ((not ex) || (successes == 0)) do
-          arg = case type do
-            :text  -> if direct do strip_msg_receiver(msg, receiver) else msg end
-            :token -> tokens
-          end
+        if hook_chan == nil or "\#"<>hook_chan == chan do
+          if ((not direct) || (receiver == @nickname)) && ((not ex) || (successes == 0)) do
+            arg = case type do
+              :text  -> if direct do strip_msg_receiver(msg, receiver) else msg end
+              :token -> tokens
+            end
 
-	  #IO.puts "applying hook: #{inspect f}"
-          if resolve_hook_result(f.(sender, arg), chan, sock) do
-            successes+1
+      #IO.puts "applying hook: #{inspect f}"
+            if resolve_hook_result(f.(sender, arg), chan, sock) do
+              successes+1
+            else
+              successes
+            end
           else
+      #IO.puts "skipping hook: #{inspect f}"
             successes
           end
         else
-	  #IO.puts "skipping hook: #{inspect f}"
           successes
         end
     end)
