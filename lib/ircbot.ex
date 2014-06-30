@@ -13,7 +13,7 @@ end
 defmodule Bot do
   def run do
     IRCBot.Connection.start_link
-    IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text, channel: "exligir"
+    IRCBot.Connection.add_hook :issue, &IssueHook.run/2, in: :text, channel: "elixir-lang"
     IRCBot.Connection.add_hook :doc, &DocHook.run/2, in: :text, channel: "elixir-lang"
     IRCBot.Connection.add_hook :link, &LinkHook.run/2, in: :text, direct: true, channel: "elixir-lang"
     IRCBot.Connection.add_hook :linkscan, &LinkScanHook.run/2, in: :text, channel: "elixir-lang"
