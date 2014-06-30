@@ -1,7 +1,7 @@
 defmodule IRCBot.Connection do
   @nickname "beamie"
   #@channel "exligir"
-  @channels ["elixir-lang", "exligir"]
+  @channels ["elixir-lang", "erlang-lisp"]
 
   require Record
 
