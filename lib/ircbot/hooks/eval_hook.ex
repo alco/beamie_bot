@@ -8,7 +8,7 @@ defmodule EvalHook do
       "erl~r16 " <> expr -> {expr, lang: "erlang", version: "R16B03-1"}
       "erl~" <> rest     -> parse_version(rest, "erlang")
 
-      "lfe~ " <> rest -> {expr, lang: "lfe", version: "latest"}
+      "lfe~ " <> expr -> {expr, lang: "lfe", version: "latest"}
 
       "eval~ " <> expr ->
         {expr, version: "master"}
