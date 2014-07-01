@@ -2,7 +2,7 @@
 
 set -e
 
-docker rm beamie_bot
+docker rm beamie_bot || true
 docker run -it -v ~/public/deploys/bot:/home/proj \
 	-e "BEAMIE_BOT_PWD=$BEAMIE_BOT_PWD" \
 	-e "BEAMIE_HOST=$BEAMIE_HOST" \
