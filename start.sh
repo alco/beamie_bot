@@ -2,6 +2,9 @@
 
 set -e
 
+BEAMIE_HOST=${BEAMIE_HOST-localhost}
+BEAMIE_PORT=${BEAMIE_PORT-8000}
+
 docker rm beamie_bot || true
 docker run -it -v ~/public/deploys/bot:/home/proj \
 	-e "BEAMIE_BOT_PWD=$BEAMIE_BOT_PWD" \
