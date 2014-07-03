@@ -1,19 +1,21 @@
-defmodule Ircbot.Mixfile do
+defmodule BeamieBot.Mixfile do
   use Mix.Project
 
   def project do
-    [ app: :ircbot,
-      version: "0.0.1",
-      elixir: "~> 0.14.0",
-      deps: deps ]
+    [
+      app: :beamie_bot,
+      version: "0.1.0",
+      elixir: "~> 0.14.1",
+      deps: deps
+    ]
   end
 
   def application do
-    [mod: { Ircbot, [] },
-     applications: [:inets, :crypto, :ssl]]
+    [mod: { BeamieBot, [] },
+     applications: [:inets, :crypto, :ssl, :chatty]]
   end
 
   defp deps do
-    []
+    [{:chatty, github: "alco/chatty"}]
   end
 end

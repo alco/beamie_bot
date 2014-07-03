@@ -1,5 +1,6 @@
 use Mix.Config
 
-config :ircbot,
-  evalhost: {System.get_env("BEAMIE_HOST"), System.get_env("BEAMIE_PORT")}
-
+config :chatty,
+  nickname: "beamie_pal",
+  channels: ["elixir-lang", "erlang-lisp"],
+  logging_enabled: true,
