@@ -33,7 +33,7 @@ defmodule RudeReplyHook do
   @num_n_replies Enum.count(@norm_replies)
 
   def run("nox", text) do
-    EvalHook.run "nox", "erleval~ "<>text
+    EvalHook.run "nox", "erl~ "<>text
   end
 
   def run(sender, text) do

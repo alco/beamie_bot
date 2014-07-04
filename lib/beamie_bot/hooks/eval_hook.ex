@@ -1,29 +1,15 @@
 defmodule EvalHook do
   def run(_sender, msg) do
     result = case msg do
-      "~~ " <> expr -> {expr, version: "master"}
-      "~~" <> rest  -> parse_version(rest, "elixir", "v")
+      "~~" <> rest -> parse_version(rest, "elixir", prefix: "v", version: "master")
 
-      "erl~ " <> expr    -> {expr, lang: "erlang", version: "17.1"}
-      "erl~r16 " <> expr -> {expr, lang: "erlang", version: "R16B03-1"}
-      "erl~" <> rest     -> parse_version(rest, "erlang")
-
-      "lfe~ " <> expr -> {expr, lang: "lfe", version: "latest"}
-
-      "eval~ " <> expr ->
-        {expr, version: "master"}
-
-      "eval~" <> rest ->
-        parse_version(rest, "elixir", "v")
-
-      "erleval~ " <> expr ->
-        {expr, lang: "erlang", version: "17.1"}
-
-      "erleval~" <> rest ->
-        parse_version(rest, "erlang")
-
-      "erleval~r16 " <> expr ->
+      "erl~r16" <> <<x::utf8>> <> expr when x in [? , ? ] ->
         {expr, lang: "erlang", version: "R16B03-1"}
+      "erl~" <> rest -> parse_version(rest, "erlang", version: "17.1")
+
+      "lfe~" <> rest -> parse_version(rest, "lfe", version: "latest")
+
+      "eval~" <> rest -> parse_version(rest, "elixir", prefix: "v", version: "master")
 
       _ -> nil
     end
@@ -45,10 +31,18 @@ defmodule EvalHook do
     end
   end
 
-  defp parse_version(str, lang, prefix \\ "") do
-    case Regex.run(~r/([\d.]+)(.+)$/, str) do
+  @re Regex.compile!("([\\d.]+)\\s+", [:unicode, :ucp])
+
+  defp parse_version(str, lang, opts) do
+    case Regex.split(@re, str, parts: 2) do
+      [expr] ->
+        version = Keyword.get(opts, :version)
+        {expr, lang: lang, version: version}
+
       [_, version, expr] ->
+        prefix = Keyword.get(opts, :prefix, "")
         {expr, lang: lang, version: prefix<>version}
+
       _ -> nil
     end
   end
