@@ -25,7 +25,7 @@ defmodule Evaluator do
 
   defp process_result({:ok, {status, _headers, data} }) do
     IO.inspect status
-    reply = data |> List.to_string |> String.strip
+    reply = data |> IO.iodata_to_binary |> String.strip
     IO.puts "replying with #{reply}"
     reply
   end
