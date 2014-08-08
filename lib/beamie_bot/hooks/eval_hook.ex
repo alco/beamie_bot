@@ -31,20 +31,30 @@ defmodule EvalHook do
     end
   end
 
-  @re Regex.compile!("([\\d.]+)\\s+", [:unicode, :ucp])
+  def parse_version(str, lang, opts) do
+    do_parse_version(str, lang, opts, "")
+  end
 
-  defp parse_version(str, lang, opts) do
-    case Regex.split(@re, str, parts: 2) do
-      [expr] ->
-        version = Keyword.get(opts, :version)
-        {expr, lang: lang, version: version}
+  defp do_parse_version(<<num>> <> rest, lang, opts, acc) when num in ?0..?9 do
+    do_parse_version(rest, lang, opts, acc <> <<num>>)
+  end
 
-      [_, version, expr] ->
-        prefix = Keyword.get(opts, :prefix, "")
-        {expr, lang: lang, version: prefix<>version}
+  defp do_parse_version("." <> rest, lang, opts, acc) do
+    do_parse_version(rest, lang, opts, acc <> ".")
+  end
 
-      _ -> nil
-    end
+  defp do_parse_version(" " <> rest, lang, opts, "") do
+    version = Keyword.get(opts, :version)
+    {rest, lang: lang, version: version}
+  end
+
+  defp do_parse_version(" " <> rest, lang, opts, version) do
+    prefix = Keyword.get(opts, :prefix, "")
+    {rest, lang: lang, version: prefix<>version}
+  end
+
+  defp do_parse_version(_, _, _, _) do
+    nil
   end
 
   @maxlines 3
