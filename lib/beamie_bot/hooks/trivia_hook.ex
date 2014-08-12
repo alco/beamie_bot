@@ -28,7 +28,7 @@ defmodule TriviaHook do
       find_at_least(tokens, [{["elixir"], 1}, {["conference", "conferences"], 1}, {["?"], 1}]) ->
         "ElixirConf is an upcoming conference (July 25-26, 2014 Austin, TX). See http://elixirconf.com/"
 
-      find_at_least(tokens, [{["elixir"], 1}, {["rails"], 1}, {["want", "wants", "is", "why", "does"], 1}, {["?"], 1}]) ->
+      find_at_least(tokens, [{["elixir"], 1}, {["rails"], 1}, {["want", "wants", "is", "why", "does", "in"], 1}, {["?"], 1}]) ->
         "please don't make rails for Elixir please. https://twitter.com/thomasfuchs/status/457158363663843328"
 
       find_at_least(tokens, [{["evm"], 1}, {["?"], 1}]) ->
