@@ -1,7 +1,6 @@
 defmodule LinkHook do
   @moduledoc """
-  Scan messages for references of the form "ref~" and substitute them with
-  links to predefined online resources.
+  Convert predefined references to links to corresponding online resources.
   """
 
   @wiki_url "https://github.com/elixir-lang/elixir/wiki/"

@@ -1,4 +1,9 @@
 defmodule LinkScanHook do
+  @moduledoc """
+  Scan messages for occurrences of link patterns followed by a tilde and
+  convert them links.
+  """
+
   def run(sender, text) do
     mid_frag = "[A-Z][[:alnum:]_]*"
     mid = "#{mid_frag}(?:\.#{mid_frag})*"
