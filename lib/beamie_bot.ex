@@ -15,7 +15,6 @@ defmodule Bot do
     Chatty.add_hook :linkscan, &LinkScanHook.run/2, in: :text, channel: "elixir-lang"
     Chatty.add_hook :trivia, &TriviaHook.run/2, in: :text, channel: "elixir-lang"
     Chatty.add_hook :ping, &PingHook.run/2, in: :text, direct: true
-    Chatty.add_hook :likewhat, &LikeWhatHook.run/2, in: :text, direct: true
     Chatty.add_hook :eval, &EvalHook.run/2, in: :text
     Chatty.add_hook :module_name, &ModuleNameHook.run/2, in: :text, direct: true
 
