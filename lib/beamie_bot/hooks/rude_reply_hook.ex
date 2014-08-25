@@ -36,6 +36,8 @@ defmodule RudeReplyHook do
   ]
   @num_n_replies Enum.count(@norm_replies)
 
+  import TriviaHook, only: [random_from: 2]
+
   def run("nox", text) do
     EvalHook.run "nox", "erl~ "<>text
   end
@@ -69,10 +71,5 @@ defmodule RudeReplyHook do
     else
       {:reply, sender, random_from(@norm_replies, @num_n_replies)}
     end
-  end
-
-  defp random_from(list, count) do
-    if count == 0, do: count = length(list)
-    Enum.at(list, :random.uniform(count)-1)
   end
 end
