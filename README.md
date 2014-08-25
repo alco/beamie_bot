@@ -4,8 +4,8 @@ beamie_bot
 Beamie is an IRC bot that can be often haning in the #elixir-lang channel on
 irc.freenode.net.
 
-It is based on Chatty - a minimalistic IRC client with support for user-defined
-hooks.
+It is based on [Chatty](https://github.com/alco/chatty) - a minimalistic IRC
+client with support for user-defined hooks.
 
 
 ## Contributing
