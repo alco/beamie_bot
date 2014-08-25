@@ -1,4 +1,18 @@
 defmodule DocHook do
+  @moduledoc """
+  This hook is responsible for scanning each message on the presence of
+  documentation references.
+
+  A doc reference can take one of the following forms:
+
+      doc Kernel
+      doc Kernel.spawn
+      doc Kernel.spawn/2
+      doc +
+      doc +/2
+
+  """
+
   def run(_sender, text) do
     mid_frag = "[A-Z][[:alnum:]_]*"
     mid = "#{mid_frag}(?:\.#{mid_frag})*"
