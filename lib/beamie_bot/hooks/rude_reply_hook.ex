@@ -1,4 +1,8 @@
 defmodule RudeReplyHook do
+  @moduledoc """
+  Send a random reply to messages directly addressed to the bot.
+  """
+
   @erlang_replies [
     "ask nox about it", "erlang? never heard of it", "erlang? what erlang?",
     "erlang? did you mean prolog?",
@@ -67,7 +71,7 @@ defmodule RudeReplyHook do
     end
   end
 
-  defp random_from(list, count \\ 0) do
+  defp random_from(list, count) do
     if count == 0, do: count = length(list)
     Enum.at(list, :random.uniform(count)-1)
   end
