@@ -1,4 +1,9 @@
 defmodule LinkHook do
+  @moduledoc """
+  Scan messages for references of the form "ref~" and substitute them with
+  links to predefined online resources.
+  """
+
   @wiki_url "https://github.com/elixir-lang/elixir/wiki/"
 
   def run(_sender, text) do
@@ -16,9 +21,9 @@ defmodule LinkHook do
       "twitter"  -> "Twitter search with elixir-related hashtags https://twitter.com/search?f=realtime&q=%23elixirlang%20OR%20%23myelixirstatus%20OR%20%40elixirlang&src=typd"
       "hex"      -> "hex is a package manager for Elixir. Browse available packages at https://hex.pm"
       "sips"     -> "Collection of screencasts covering a wide range of topics: http://elixirsips.com"
-      "r17osx"   -> "install R17 on OS X: `brew update && brew install --no-docs --devel erlang` or download from https://www.erlang-solutions.com/downloads/download-erlang-otp"
+      #"r17osx"   -> "install R17 on OS X: `brew update && brew install --no-docs --devel erlang` or download from https://www.erlang-solutions.com/downloads/download-erlang-otp"
 
-      "elixirconf" -> "ElixirConf is an upcoming conference (July 25-26, 2014 Austin, TX). See http://elixirconf.com/"
+      #"elixirconf" -> "ElixirConf is an upcoming conference (July 25-26, 2014 Austin, TX). See http://elixirconf.com/"
       _          -> nil
     end
     result && {:msg, result}
