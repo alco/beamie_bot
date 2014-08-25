@@ -1,4 +1,8 @@
 defmodule PingHook do
+  @moduledoc """
+  Reply with a randomly chosen response to ping messages.
+  """
+
   @replies [
     "pong", "zap", "spank", "pow", "bang", "ka-pow", "woosh", "smack", "pink",
   ]
@@ -14,9 +18,6 @@ defmodule PingHook do
         else
           {:reply, sender, Enum.at(@replies, :random.uniform(@num_replies)-1)}
         end
-      "ping nox" ->
-        {:reply, "nox", "<3"}
-
       _ -> nil
     end
   end
