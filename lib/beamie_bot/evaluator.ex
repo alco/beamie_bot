@@ -1,4 +1,9 @@
 defmodule Evaluator do
+  @moduledoc """
+  This module is designed to work the beamie_eval project which has not yet
+  been released publicly.
+  """
+
   def eval(expr, opts \\ []) do
     lang = Keyword.get(opts, :lang, "elixir")
     version = Keyword.get(opts, :version)

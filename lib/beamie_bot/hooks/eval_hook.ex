@@ -3,7 +3,7 @@ defmodule EvalHook do
     result = case msg do
       "~~" <> rest -> parse_version(rest, "elixir", prefix: "v", version: "master")
 
-      "erl~r16" <> <<x::utf8>> <> expr when x in [? , ? ] ->
+      "erl~r16" <> <<x::utf8>> <> expr when x in [?\s, ?\xA0] ->
         {expr, lang: "erlang", version: "R16B03-1"}
       "erl~" <> rest -> parse_version(rest, "erlang", version: "17.1")
 

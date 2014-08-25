@@ -4,15 +4,17 @@ defmodule BeamieBot.Mixfile do
   def project do
     [
       app: :beamie_bot,
-      version: "0.1.0",
-      elixir: "~> 0.14.1",
+      version: "0.5.0",
+      elixir: ">= 0.14.1 and < 2.0.0",
       deps: deps
     ]
   end
 
   def application do
-    [mod: { BeamieBot, [] },
-     applications: [:inets, :crypto, :ssl, :chatty]]
+    [
+      mod: {BeamieBot, []},
+      applications: [:inets, :crypto, :ssl, :chatty]
+    ]
   end
 
   defp deps do
