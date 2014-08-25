@@ -1,4 +1,14 @@
 defmodule ModuleNameHook do
+  @moduledoc """
+  Generate silly module names on request.
+
+  ## Example
+
+      user       | beamie_bot: gen name
+      beamie_bot | PeachyPlugin
+
+  """
+
   @adjectives [
     general: [
         "saucy", "raring", "spicy", "smelly", "obnoxious",
