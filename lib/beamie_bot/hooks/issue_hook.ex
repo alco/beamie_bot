@@ -1,4 +1,14 @@
 defmodule IssueHook do
+  @moduledoc """
+  Look for issue references in the messages and generate links to GitHub.
+
+  ## Example references
+
+      #123
+      elixir#14
+
+  """
+
   def run(_sender, text) do
     #IO.puts "Testing text for issues: '#{text}'"
     Regex.scan(~r"(?: |^)([[:alpha:]]+)?#(\d+)(?:(?=[[:space:]])|$)|issue[[:space:]]+#?(\d+)(?:(?=[[:space:]])|$)", text)
