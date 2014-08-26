@@ -18,6 +18,9 @@ defmodule BeamieBot.Mixfile do
   end
 
   defp deps do
-    [{:chatty, github: "alco/chatty"}]
+    [
+      {:chatty, github: "alco/chatty"},
+      {:poison, "~> 1.0.1"}
+    ]
   end
 end

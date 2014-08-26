@@ -17,6 +17,7 @@ defmodule Bot do
     Chatty.add_hook :ping, &PingHook.run/2, in: :text, direct: true
     Chatty.add_hook :eval, &EvalHook.run/2, in: :text
     Chatty.add_hook :module_name, &ModuleNameHook.run/2, in: :text, direct: true
+    Chatty.add_hook :hex, &HexHook.run/2, in: :text
 
     # this one has to be last
     Chatty.add_hook :rudereply, &RudeReplyHook.run/2, in: :text, direct: true, exclusive: true
