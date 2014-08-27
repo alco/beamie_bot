@@ -12,4 +12,4 @@ docker run -it -v ~/public/deploys/bot:/home/proj \
 	-e "BEAMIE_PORT=$BEAMIE_PORT" \
 	--link beamie_eval:localhost \
 	--name beamie_bot \
-	mix_build:v0.14.1 iex -S mix
+	mix_build:v0.15.1 iex -S mix
