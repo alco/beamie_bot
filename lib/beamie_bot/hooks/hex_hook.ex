@@ -4,7 +4,7 @@ defmodule HexHook do
   """
 
   def run(_sender, msg) do
-    result = case msg do
+    case msg do
       "!pkg " <> rest ->
         encode_query(rest) |> search_hex
       _ -> nil
