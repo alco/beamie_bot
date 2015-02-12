@@ -16,7 +16,8 @@ defmodule IssueHook do
     #|> pfilter(&issue_valid?/1)
     |> Enum.map(fn
       {"", num} -> {:msg, "https://github.com/elixir-lang/elixir/issues/#{num}"}
-      {"hex", num} -> {:msg, "https://github.com/ericmj/hex/issues/#{num}"}
+      {"hex", num} -> {:msg, "https://github.com/hexpm/hex/issues/#{num}"}
+      {"hex_web", num} -> {:msg, "https://github.com/hexpm/hex_web/issues/#{num}"}
       {"plug", num} -> {:msg, "https://github.com/elixir-lang/plug/issues/#{num}"}
       {"doc", num} -> {:msg, "https://github.com/elixir-lang/ex_doc/issues/#{num}"}
       {"site", num} -> {:msg, "https://github.com/elixir-lang/elixir-lang.github.com/issues/#{num}"}
