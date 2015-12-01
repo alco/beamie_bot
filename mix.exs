@@ -20,7 +20,7 @@ defmodule BeamieBot.Mixfile do
   defp deps do
     [
       {:chatty, github: "alco/chatty"},
-      {:poison, "~> 1.0.1"}
+      {:poison, "~> 1.5.0"}
     ]
   end
 end

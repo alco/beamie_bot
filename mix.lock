@@ -1,2 +1,2 @@
 %{"chatty": {:git, "https://github.com/alco/chatty.git", "45e0c460a4fce31133951ca8c78a3975ba830181", []},
-  "poison": {:hex, :poison, "1.0.3"}}
+  "poison": {:hex, :poison, "1.5.0"}}
