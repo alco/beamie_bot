@@ -10,7 +10,7 @@ defmodule TriviaHook do
     "what's an EVM? an Emotionally Variadic Method?",
   ]
 
-  def run(_sender, text) do
+  def run(sender, text) do
     tokens = tokenize(text)
     result = cond do
       find_at_least(tokens, [
@@ -30,7 +30,7 @@ defmodule TriviaHook do
         {["elixir"], 1},
         {["package", "packages", "npm", "gem", "gems", "bundler"], 1},
         {["?"], 1}]) ->
-          {:msg, msg} = LinkHook.run(_sender, "hex")
+          {:msg, msg} = LinkHook.run(sender, "hex")
           msg
 
       find_at_least(tokens, [
@@ -84,8 +84,8 @@ defmodule TriviaHook do
     url = 'http://programmerryangosling.tumblr.com/random'
     result = :httpc.request(:head, {url, []}, [], [sync: true])
     case result do
-      {:error, _reason} ->
-        IO.inspect _reason
+      {:error, reason} ->
+        IO.inspect reason
         nil
       {:ok, {status, headers, _data} } ->
         #IO.inspect status

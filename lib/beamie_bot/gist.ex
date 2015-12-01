@@ -16,8 +16,8 @@ defmodule BeamieBot.GistAPI do
     """
     result = :httpc.request(:post, {'https://api.github.com/gists', [{'User-Agent', 'beamie bot'}], 'application/json', json}, [], [sync: true])
     case result do
-      {:error, _reason} ->
-        IO.inspect _reason
+      {:error, reason} ->
+        IO.inspect reason
         "*failed to gist the output*"
       {:ok, {status, _headers, data} } ->
         IO.inspect status

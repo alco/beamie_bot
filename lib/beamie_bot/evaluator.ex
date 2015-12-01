@@ -23,8 +23,8 @@ defmodule Evaluator do
     end
   end
 
-  defp process_result({:error, _reason}) do
-    IO.inspect _reason
+  defp process_result({:error, reason}) do
+    IO.inspect reason
     "*internal service error*"
   end
 
