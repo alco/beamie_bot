@@ -9,9 +9,9 @@ defmodule LinkScanHook do
     mid = "#{mid_frag}(?:\.#{mid_frag})*"
     fid = "[^A-Z](?:[^/[:space:].]|/(?!\\d))*"
 
-    module_re = ~r"(?<=&|^| )#{mid}(?=~)"
-    fun_re    = ~r"(?<=&|^| )#{fid}(?:/(\d))?(?=~)"
-    mfa_re    = ~r"(?<=&|^| )#{mid}\.#{fid}(?:/\d)?(?=~)"
+    module_re = ~r"(?<=&|^| )#{mid}(?=~$)"
+    fun_re    = ~r"(?<=&|^| )#{fid}(?:/\d)?(?=~$)"
+    mfa_re    = ~r"(?<=&|^| )#{mid}\.#{fid}(?:/\d)?(?=~$)"
     twitter_re = ~r"(?<=\s|^)@([a-zA-Z_]+)"
 
     mapf(Regex.scan(~r"\b([-_[:alnum:]]+)~", text), fn [_, word] ->
