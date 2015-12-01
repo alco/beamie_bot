@@ -70,7 +70,7 @@ defmodule ModuleNameHook do
   @keys [:general, :technical]
 
 
-  def run(_sender, msg) do
+  def run(msg, _sender, _chan) do
     tokens = TriviaHook.tokenize(msg)
     if TriviaHook.find_at_least(tokens, [{["module", "gen", "generate"], 1}, {["name"], 1}]) do
       index = :random.uniform(2)-1

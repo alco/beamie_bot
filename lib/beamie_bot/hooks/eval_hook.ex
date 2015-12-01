@@ -4,7 +4,7 @@ defmodule EvalHook do
   Evaluator.
   """
 
-  def run(_sender, msg) do
+  def run(msg, _sender, _chan) do
     result = case msg do
       "~~" <> rest -> parse_version(rest, "elixir", prefix: "v", version: "master")
 

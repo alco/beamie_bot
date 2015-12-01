@@ -5,7 +5,7 @@ defmodule LinkHook do
 
   @wiki_url "https://github.com/elixir-lang/elixir/wiki/"
 
-  def run(_sender, text) do
+  def run(text, _sender, _chan) do
     result = case String.downcase(text) do
       "wiki"     -> @wiki_url
       "articles" -> @wiki_url <> "Articles"

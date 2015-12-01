@@ -13,7 +13,7 @@ defmodule BeamieBot.Mixfile do
   def application do
     [
       mod: {BeamieBot, []},
-      applications: [:inets, :crypto, :ssl, :chatty]
+      applications: [:logger, :inets, :crypto, :ssl, :chatty]
     ]
   end
 

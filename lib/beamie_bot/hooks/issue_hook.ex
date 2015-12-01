@@ -9,7 +9,7 @@ defmodule IssueHook do
 
   """
 
-  def run(_sender, text) do
+  def run(text, _sender, _chan) do
     #IO.puts "Testing text for issues: '#{text}'"
     Regex.scan(~r"(?: |^)([[:alpha:]_]+)?#(\d+)(?:(?=[[:space:]])|$)", text)
     |> Enum.map(fn [_, proj, num] -> {proj, num} end)

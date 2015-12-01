@@ -10,7 +10,7 @@ defmodule PingHook do
 
   @nox_replies ["<(｀^´)>", "<3"]
 
-  def run(sender, text) do
+  def run(text, sender, _chan) do
     case String.downcase(text) do
       "ping" ->
         if sender == "nox" do

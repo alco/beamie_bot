@@ -38,11 +38,11 @@ defmodule RudeReplyHook do
 
   import TriviaHook, only: [random_from: 2]
 
-  def run("nox", text) do
-    EvalHook.run "nox", "erl~ "<>text
+  def run(text, "nox", chan) do
+    EvalHook.run("erl~ " <> text, "nox", chan)
   end
 
-  def run(sender, text) do
+  def run(text, sender, _chan) do
     downtext = String.downcase(text)
     if String.contains?(downtext, "?") do
       cond do

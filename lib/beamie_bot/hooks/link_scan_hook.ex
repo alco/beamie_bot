@@ -4,7 +4,7 @@ defmodule LinkScanHook do
   convert them links.
   """
 
-  def run(sender, text) do
+  def run(text, sender, chan) do
     mid_frag = "[A-Z][[:alnum:]_]*"
     mid = "#{mid_frag}(?:\.#{mid_frag})*"
     fid = "[^A-Z](?:[^/[:space:].]|/(?!\\d))*"
@@ -15,19 +15,19 @@ defmodule LinkScanHook do
     twitter_re = ~r"(?<=\s|^)@([a-zA-Z_]+)"
 
     mapf(Regex.scan(~r"\b([-_[:alnum:]]+)~", text), fn [_, word] ->
-      LinkHook.run(sender, word)
+      LinkHook.run(word, sender, chan)
     end)
     ++
     flatmapf(Regex.scan(module_re, text), fn [thing] ->
-      DocHook.run(sender, "doc " <> thing)
+      DocHook.run("doc " <> thing, sender, chan)
     end)
     ++
     flatmapf(Regex.scan(fun_re, text), fn [thing] ->
-      DocHook.run(sender, "doc " <> thing)
+      DocHook.run("doc " <> thing, sender, chan)
     end)
     ++
     flatmapf(Regex.scan(mfa_re, text), fn [thing] ->
-      DocHook.run(sender, "doc " <> thing)
+      DocHook.run("doc " <> thing, sender, chan)
     end)
     ++
     mapf(Regex.scan(twitter_re, text), fn [_, name] ->

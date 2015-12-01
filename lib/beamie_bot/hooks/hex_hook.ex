@@ -3,7 +3,7 @@ defmodule HexHook do
   Searches for a package on hex.pm
   """
 
-  def run(_sender, msg) do
+  def run(msg, _sender, _chan) do
     case msg do
       "!pkg " <> rest ->
         encode_query(rest) |> search_hex

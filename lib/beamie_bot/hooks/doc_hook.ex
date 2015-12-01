@@ -13,7 +13,7 @@ defmodule DocHook do
 
   """
 
-  def run(_sender, text) do
+  def run(text, _sender, _chan) do
     mid_frag = "[A-Z][[:alnum:]_]*"
     mid = "#{mid_frag}(?:\.#{mid_frag})*"
     fid = "[^A-Z](?:[^/[:space:].]|/(?!\\d))*"

@@ -10,7 +10,7 @@ defmodule TriviaHook do
     "what's an EVM? an Emotionally Variadic Method?",
   ]
 
-  def run(sender, text) do
+  def run(text, sender, chan) do
     tokens = tokenize(text)
     result = cond do
       find_at_least(tokens, [
@@ -30,7 +30,7 @@ defmodule TriviaHook do
         {["elixir"], 1},
         {["package", "packages", "npm", "gem", "gems", "bundler"], 1},
         {["?"], 1}]) ->
-          {:msg, msg} = LinkHook.run(sender, "hex")
+          {:msg, msg} = LinkHook.run("hex", sender, chan)
           msg
 
       find_at_least(tokens, [
