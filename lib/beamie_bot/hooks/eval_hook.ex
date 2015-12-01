@@ -62,10 +62,16 @@ defmodule EvalHook do
     nil
   end
 
-  @maxlines 3
+  @max_lines 2
+  @max_error_lines 1
 
+  # if it's an exception, print only @max_error_lines before truncating
+  defp lines_to_msg(["** (" <> _ | _] = lines, data), do:
+    lines_to_msg(lines, @max_error_lines, [], data)
+
+  # if it's something else, print only @max_lines before truncating
   defp lines_to_msg(lines, data), do:
-    lines_to_msg(lines, @maxlines, [], data)
+    lines_to_msg(lines, @max_lines, [], data)
 
   defp lines_to_msg([], _, acc, _), do:
     Enum.reverse(acc)
