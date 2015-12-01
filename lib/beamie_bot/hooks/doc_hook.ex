@@ -92,11 +92,11 @@ defmodule DocHook do
   end
 
   defp make_module_url(modname) do
-    "http://elixir-lang.readthedocs.org/en/latest/ref/master/#{section(modname)}/#{modname}"
+    "http://elixir-lang.org/docs/stable/#{section(modname)}/#{modname}.html"
   end
 
   defp make_mfa_url(modname, fname, arity) do
-    "http://elixir-lang.readthedocs.org/en/latest/ref/master/#{section(modname)}/#{modname}/##{modname}.#{fname}/#{arity}"
+    "http://elixir-lang.org/docs/stable/#{section(modname)}/#{modname}.html##{fname}/#{arity}"
   end
 
   defp section(modname) do
