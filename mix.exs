@@ -4,8 +4,8 @@ defmodule BeamieBot.Mixfile do
   def project do
     [
       app: :beamie_bot,
-      version: "0.5.0",
-      elixir: ">= 0.14.1 and < 2.0.0",
+      version: "0.6.0",
+      elixir: "~> 1.0",
       deps: deps
     ]
   end
